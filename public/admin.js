@@ -4,7 +4,7 @@ const money=v=>"NPR "+n(v);
 function bars(root,rows,order){const map=Object.fromEntries(rows.map(x=>[x.status,x.count]));const max=Math.max(1,...order.map(x=>map[x]||0));root.innerHTML=order.map(s=>'<div class="barrow"><span>'+esc(s.replaceAll("_"," "))+'</span><div class="track"><div class="fill" style="width:'+((map[s]||0)/max*100)+'%"></div></div><strong>'+n(map[s]||0)+'</strong></div>').join("")||'<div class="muted">No records yet.</div>';}
 async function load(){
  const r=await fetch("/api/admin-overview");
- if(r.status===401){location.href="/login.html?next="+encodeURIComponent("/admin.html");return;}
+ if(r.status===401){location.href="https://hatchable.com/console/login";return;}
  if(r.status===403){document.getElementById("metrics").innerHTML='<div class="error">Administrator access is required to view this dashboard.</div>';return;}
  const d=await r.json();if(!r.ok)throw new Error(d.error||"Unable to load dashboard");
  const m=d.metrics;

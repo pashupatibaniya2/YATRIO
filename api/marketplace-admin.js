@@ -21,9 +21,11 @@ export default async function(req,res) {
     return res.json({provider:deleted.rows[0],message:"Provider and its marketplace listings were deleted."});
   }
   if(!["approved","rejected","suspended"].includes(status)) return res.status(400).json({error:"Choose approved, rejected or suspended."});
-  const result=await db.query("UPDATE marketplace_providers SET status=$1,admin_note=$2,updated_at=now() WHERE id=$3 RETURNING id,business_name,description,commission_rate,category_slug,status,admin_note",[status,note,id]);
-  if(!result.rows.length) return res.status(404).json({error:"Partner application not found."});
-  const provider=result.rows[0];
-  await db.query("UPDATE marketplace_listings SET provider_business_name=$1,provider_description=$2,provider_commission_rate=$3,status=CASE WHEN $4<>'approved' AND status='published' THEN 'paused' ELSE status END,updated_at=now() WHERE provider_id=$5",[provider.business_name,provider.description,provider.commission_rate,status,id]);
+  const result=await db.transaction([
+    {sql:"UPDATE marketplace_providers SET status=$1,admin_note=$2,updated_at=now() WHERE id=$3 RETURNING id,business_name,description,commission_rate,category_slug,status,admin_note",params:[status,note,id]},
+    {sql:"UPDATE marketplace_listings l SET provider_business_name=p.business_name,provider_description=p.description,provider_commission_rate=p.commission_rate,status=CASE WHEN $2<>'approved' AND l.status='published' THEN 'paused' ELSE l.status END,updated_at=now() FROM marketplace_providers p WHERE p.id=$1 AND l.provider_id=p.id",params:[id,status]}
+  ]);
+  if(!result.results[0].rows.length) return res.status(404).json({error:"Partner application not found."});
+  const provider=result.results[0].rows[0];
   res.json({provider,message:"Partner application status updated."});
 }

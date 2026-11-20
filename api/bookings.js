@@ -42,6 +42,7 @@ export default async function(req,res) {
   } catch (e) {
     await db.query("UPDATE bookings SET status='expired' WHERE pnr=$1 AND status='awaiting_payment'",[pnr]);
     await db.query("UPDATE seat_inventory SET status='available',hold_token=NULL,hold_expires_at=NULL,booking_id=NULL WHERE hold_token=$1",[token]);
-    return res.status(409).json({error:String(e.message||"Reservation could not be completed. Please select seats again.")});
+    const message=String(e.message||"");
+    return res.status(409).json({error:message.startsWith("The seat hold expired")?message:"Reservation could not be completed. Please refresh the seat map and try again."});
   }
 }

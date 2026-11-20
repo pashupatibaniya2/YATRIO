@@ -13,10 +13,10 @@ export default async function(req,res) {
   const existing = await db.query("SELECT id,status FROM operators WHERE owner_user_id=$1",[userId]);
   if (existing.rows.length) return res.status(409).json({error:"An operator application already exists for this account.",operator:existing.rows[0]});
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,36)+"-"+crypto.randomUUID().slice(0,6);
-  const created = await db.query(
-    "INSERT INTO operators (name,slug,description,phone,status,owner_user_id,registration_no,contact_name) VALUES ($1,$2,$3,$4,'pending',$5,$6,$7) RETURNING id,name,slug,status,phone,registration_no,contact_name",
-    [name,slug,"Operator application submitted for verification.",phone,userId,registration,contactName]
-  );
-  await db.query("INSERT INTO operator_users (operator_id,user_id,role) VALUES ($1,$2,'owner')",[created.rows[0].id,userId]);
-  res.status(201).json({operator:created.rows[0],message:"Application submitted. Yatrio will verify your operator details before enabling schedule publishing."});
+  const operatorId=crypto.randomUUID();
+  const created=await db.transaction([
+    {sql:"INSERT INTO operators (id,name,slug,description,phone,status,owner_user_id,registration_no,contact_name) VALUES ($1,$2,$3,$4,$5,'pending',$6,$7,$8) RETURNING id,name,slug,status,phone,registration_no,contact_name",params:[operatorId,name,slug,"Operator application submitted for verification.",phone,userId,registration,contactName]},
+    {sql:"INSERT INTO operator_users (operator_id,user_id,role) VALUES ($1,$2,'owner')",params:[operatorId,userId]}
+  ]);
+  res.status(201).json({operator:created.results[0].rows[0],message:"Application submitted. Yatrio will verify your operator details before enabling schedule publishing."});
 }

@@ -8,9 +8,11 @@ export default async function(req,res) {
     return res.json({documents});
   }
   const id=String(req.body?.document_id||""), status=String(req.body?.review_status||""), note=String(req.body?.review_note||"").trim().slice(0,500);
-  if(!/^[0-9a-f-]{36}$/i.test(id)||!["approved","rejected"].includes(status)) return res.status(400).json({error:"Provide a document and valid review decision."});
-  const updated=await db.query("UPDATE operator_documents SET review_status=$1,verification_status=$1,review_note=$2,reviewed_at=now(),updated_at=now() WHERE id=$3 RETURNING id,document_type,review_status,review_note",[status,note,id]);
-  if(!updated.rows.length) return res.status(404).json({error:"Document not found."});
-  if(status==="rejected") await db.query("UPDATE operators SET status='pending' WHERE id=(SELECT operator_id FROM operator_documents WHERE id=$1) AND status='approved'",[id]);
-  return res.json({document:updated.rows[0],message:"Document review saved. If a previously approved operator no longer has all required approvals, its account has been returned to pending review."});
+  if(!/^[0-9a-f-]{36}$/i.test(id)||!["approved","rejected"].includes(status)||(status==="rejected"&&!note)) return res.status(400).json({error:"Provide a document, valid review decision and a rejection reason when rejecting."});
+  const updated=await db.transaction([
+    {sql:"UPDATE operator_documents SET review_status=$1,verification_status=$1,review_note=$2,reviewed_at=now(),updated_at=now() WHERE id=$3 RETURNING id,operator_id,document_type,review_status,review_note",params:[status,note,id]},
+    {sql:"UPDATE operators SET status='pending' WHERE id=(SELECT operator_id FROM operator_documents WHERE id=$1) AND status='approved' AND $2='rejected'",params:[id,status]}
+  ]);
+  if(!updated.results[0].rows.length) return res.status(404).json({error:"Document not found."});
+  return res.json({document:updated.results[0].rows[0],message:"Document review saved. If a previously approved operator no longer has all required approvals, its account has been returned to pending review."});
 }

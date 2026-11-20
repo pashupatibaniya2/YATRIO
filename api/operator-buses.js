@@ -13,9 +13,13 @@ export default async function(req,res) {
  const name=String(req.body?.name||"").trim(),reg=String(req.body?.registration_no||"").trim().toUpperCase(),type=String(req.body?.bus_type||"Deluxe").trim().slice(0,60),capacity=Number(req.body?.capacity||32);
  if(req.method==="POST"){
   if(name.length<2||reg.length<3||!Number.isInteger(capacity)||capacity<4||capacity>80)return res.status(400).json({error:"Enter a bus name, registration number and capacity between 4 and 80."});
-  const bus=await db.query("INSERT INTO buses (operator_id,name,registration_no,bus_type,capacity) VALUES ($1,$2,$3,$4,$5) RETURNING id,name,registration_no,bus_type,capacity,status",[op.id,name,reg,type,capacity]);
-  await db.query("INSERT INTO bus_seats (bus_id,seat_number,seat_type) SELECT $1,'S'||n,'standard' FROM generate_series(1,$2) n",[bus.rows[0].id,capacity]);
-  return res.status(201).json({bus:bus.rows[0],message:"Bus created with "+capacity+" seats."});
+  const busId=crypto.randomUUID();
+  const created=await db.transaction([
+   {sql:"INSERT INTO buses (id,operator_id,name,registration_no,bus_type,capacity) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id,name,registration_no,bus_type,capacity,status",params:[busId,op.id,name,reg,type,capacity]},
+   {sql:"INSERT INTO bus_seats (bus_id,seat_number,seat_type) SELECT $1,'S'||n,'standard' FROM generate_series(1,$2) n",params:[busId,capacity]},
+   {sql:"SELECT CASE WHEN (SELECT count(*) FROM bus_seats WHERE bus_id=$1) <> $2 THEN 1/0 ELSE 1 END",params:[busId,capacity]}
+  ]);
+  return res.status(201).json({bus:created.results[0].rows[0],message:"Bus created with "+capacity+" seats."});
  }
  const id=String(req.body?.bus_id||""),status=String(req.body?.status||"");
  if(!/^[0-9a-f-]{36}$/i.test(id))return res.status(400).json({error:"A valid bus_id is required."});
@@ -31,10 +35,16 @@ export default async function(req,res) {
  }
  if(name.length<2||reg.length<3||!Number.isInteger(capacity)||capacity<4||capacity>80)return res.status(400).json({error:"Enter a bus name, registration number and capacity between 4 and 80."});
  if(capacity!==Number(current.capacity)){
-  const used=await db.query("SELECT count(*) AS n FROM schedules WHERE bus_id=$1",[id]);
-  if(Number(used.rows[0]?.n)>0)return res.status(409).json({error:"Seat capacity cannot be changed after schedules have been created. Add a new bus with the correct layout instead."});
-  await db.query("DELETE FROM bus_seats WHERE bus_id=$1",[id]);
-  await db.query("INSERT INTO bus_seats (bus_id,seat_number,seat_type) SELECT $1,'S'||n,'standard' FROM generate_series(1,$2) n",[id,capacity]);
+  try{
+   await db.transaction([
+    {sql:"UPDATE buses SET name=$1,registration_no=$2,bus_type=$3,capacity=$4 WHERE id=$5 AND operator_id=$6 AND NOT EXISTS (SELECT 1 FROM schedules WHERE bus_id=$5) RETURNING id",params:[name,reg,type,capacity,id,op.id]},
+    {sql:"SELECT CASE WHEN (SELECT capacity FROM buses WHERE id=$1 AND operator_id=$2) <> $3 THEN 1/0 ELSE 1 END",params:[id,op.id,capacity]},
+    {sql:"DELETE FROM bus_seats WHERE bus_id=$1",params:[id]},
+    {sql:"INSERT INTO bus_seats (bus_id,seat_number,seat_type) SELECT $1,'S'||n,'standard' FROM generate_series(1,$2) n",params:[id,capacity]}
+   ]);
+  }catch(e){return res.status(409).json({error:"Seat capacity cannot be changed after a schedule has been created, or the registration number is already in use. Add a new bus with the correct layout instead."});}
+  const updated=await db.query("SELECT id,name,registration_no,bus_type,capacity,status FROM buses WHERE id=$1 AND operator_id=$2",[id,op.id]);
+  return res.json({bus:updated.rows[0],message:"Bus details and seat layout updated."});
  }
  const updated=await db.query("UPDATE buses SET name=$1,registration_no=$2,bus_type=$3,capacity=$4 WHERE id=$5 AND operator_id=$6 RETURNING id,name,registration_no,bus_type,capacity,status",[name,reg,type,capacity,id,op.id]);
  return res.json({bus:updated.rows[0],message:"Bus details updated."});

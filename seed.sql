@@ -20,9 +20,9 @@ INSERT INTO routes (origin_terminal_id,destination_terminal_id,distance_km,durat
 SELECT a.id,b.id,x.km,x.duration FROM terminals a, terminals b, (SELECT 'Gongabu Bus Park' a,'Tourist Bus Park' b,200 km,'7–8 hours' duration UNION ALL SELECT 'Gongabu Bus Park','Sauraha Bus Stop',165,'5–6 hours' UNION ALL SELECT 'Gongabu Bus Park','Butwal Bus Park',265,'7–9 hours' UNION ALL SELECT 'Gongabu Bus Park','Biratnagar Bus Park',375,'10–12 hours' UNION ALL SELECT 'Gongabu Bus Park','Dharan Bus Park',390,'10–12 hours') x
 WHERE a.name=x.a AND b.name=x.b AND NOT EXISTS (SELECT 1 FROM routes r WHERE r.origin_terminal_id=a.id AND r.destination_terminal_id=b.id);
 INSERT INTO buses (operator_id,name,registration_no,bus_type,capacity)
-SELECT o.id,'Himalayan Deluxe Coach','DEMO-001','Deluxe AC',32 FROM operators o WHERE o.slug='himalayan-express' AND NOT EXISTS (SELECT 1 FROM buses WHERE registration_no='DEMO-001');
+SELECT o.id,'Himalayan Deluxe Coach','DEMO-001','Deluxe AC',16 FROM operators o WHERE o.slug='himalayan-express' AND NOT EXISTS (SELECT 1 FROM buses WHERE registration_no='DEMO-001');
 INSERT INTO buses (operator_id,name,registration_no,bus_type,capacity)
-SELECT o.id,'Mountain Tourist Coach','DEMO-002','Tourist Sofa',32 FROM operators o WHERE o.slug='mountain-line' AND NOT EXISTS (SELECT 1 FROM buses WHERE registration_no='DEMO-002');
+SELECT o.id,'Mountain Tourist Coach','DEMO-002','Tourist Sofa',16 FROM operators o WHERE o.slug='mountain-line' AND NOT EXISTS (SELECT 1 FROM buses WHERE registration_no='DEMO-002');
 INSERT INTO bus_seats (bus_id,seat_number,seat_type)
 SELECT b.id,'A'||n,'standard' FROM buses b CROSS JOIN generate_series(1,16) n WHERE b.registration_no='DEMO-001' AND NOT EXISTS (SELECT 1 FROM bus_seats s WHERE s.bus_id=b.id);
 INSERT INTO bus_seats (bus_id,seat_number,seat_type)

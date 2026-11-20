@@ -23,4 +23,4 @@ document.getElementById("partnerForm").addEventListener("submit",async e=>{
   }catch(err){status.className="status error";status.textContent=err.message;}
   finally{button.disabled=false;button.textContent="Submit partner application →";}
 });
-loadMarketplace().catch(e=>{document.getElementById("categories").innerHTML='<p class="status error">'+e.message+'</p>';});
+loadMarketplace().catch(e=>{document.getElementById("categories").innerHTML='<p class="status error">'+esc(e.message)+'</p>';});

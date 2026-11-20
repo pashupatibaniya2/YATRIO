@@ -19,6 +19,8 @@ export default async function(req,res) {
     const result=await db.query("INSERT INTO marketplace_bookings (listing_id,availability_id,user_id,quantity,traveler_name,traveler_email,traveler_phone,customer_note) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id,booking_ref,category_slug,quantity,currency,unit_price,total_amount,commission_amount,provider_payout_amount,status,payment_status,created_at",[listingId,availabilityId,userId,quantity,name,email,phone,note]);
     return res.status(201).json({booking:result.rows[0],message:"Booking request sent to the provider. Payment has not been collected; this is not a paid ticket or final voucher."});
   } catch(e) {
-    return res.status(409).json({error:String(e.message||"This service or availability is no longer bookable.")});
+    const message=String(e.message||"");
+    const safeMessages=["Selected availability slot was not found","This service is not currently bookable","This provider is not verified","This availability is no longer open","Not enough availability remains"];
+    return res.status(409).json({error:safeMessages.includes(message)?message:"This service or availability is no longer bookable. Please refresh and try again."});
   }
 }
