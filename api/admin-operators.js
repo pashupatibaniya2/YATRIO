@@ -23,7 +23,7 @@ export default async function(req,res) {
   return res.status(404).json({error:"Operator application not found."});
  }
  if(target==="approved"){
-  await db.query("INSERT INTO operator_referral_codes (operator_id,code) VALUES ($1,$2) ON CONFLICT (operator_id) DO NOTHING",[id,"YTR"+id.replace(/-/g,"").slice(0,8).toUpperCase()]);
+  await db.query("INSERT INTO operator_referral_codes (operator_id,code) SELECT $1,$2 WHERE EXISTS (SELECT 1 FROM operators WHERE id=$1 AND owner_user_id IS NOT NULL) ON CONFLICT (operator_id) DO NOTHING",[id,"YTR"+id.replace(/-/g,"").slice(0,8).toUpperCase()]);
  }
  const message=status==="suspended"?"Operator suspended. Public departures and new reservations are now disabled.":status==="unsuspended"?(target==="approved"?"Operator unsuspended and reactivated.":"Operator unsuspended to pending review because all four required documents are not currently approved."):"Operator status updated.";
  return res.json({operator:updated.rows[0],message});
