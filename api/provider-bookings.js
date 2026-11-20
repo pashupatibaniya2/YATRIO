@@ -25,6 +25,6 @@ export default async function(req,res) {
     if(!result.rows.length) return res.status(404).json({error:"Booking not found for this provider."});
     return res.json({booking:result.rows[0],message:action==="confirm"?"Provider confirmed the request. Payment is still not collected.":"Booking request rejected and availability released."});
   } catch(e) {
-    return res.status(409).json({error:String(e.message||"Booking could not be updated.")});
+    return res.status(409).json({error:"Booking is no longer pending or is not assigned to your provider account."});
   }
 }
