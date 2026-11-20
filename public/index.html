@@ -20,7 +20,7 @@ footer{background:#102a43;color:#d6e4e9;padding:36px 0}.foot{display:flex;justif
 @media(max-width:560px){.hero-scene{right:-190px;transform:translateY(-40%) scale(.62);opacity:.18}.wrap{padding:0 16px}.nav{height:64px}.navright a{display:none}.hero{padding:48px 0 85px}.hero p{font-size:15px}.searchbox{grid-template-columns:1fr;padding:16px;margin-top:-48px}.searchbtn{min-height:48px}.buscard{grid-template-columns:1fr;gap:13px}.times{justify-content:space-between}.price{text-align:left}.selectbtn{width:100%}.routes{grid-template-columns:1fr 1fr}.sectionhead{align-items:start;flex-direction:column;gap:8px}.formgrid{grid-template-columns:1fr}.formgrid .field.full{grid-column:auto}.modal{padding:18px}.foot{align-items:start;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
 </style>
-</head>
+<link rel="stylesheet" href="/yatrio-motion.css"><link rel="stylesheet" href="/yatrio-motion.css"></head>
 <body>
 <header><div class="wrap nav"><div class="brand"><span class="brandmark">Y</span>yatrio</div><div class="navright"><a href="/travel.html">Explore all travel</a><a href="/explore.html">Browse stays & experiences</a><a href="/marketplace-account.html">My bookings</a><a href="/operator.html">For bus operators</a><button class="navbtn" onclick="document.getElementById('from').focus()">Book a bus</button></div></div></header>
 <section class="hero"><div class="hero-scene" aria-hidden="true"><div class="scene-sun"></div><div class="mountain one"></div><div class="mountain two"></div><div class="mountain three"></div><div class="scene-road"></div><div class="scene-label">Nepal · Made for discovery</div><div class="scene-bus">YATRIO EXPRESS</div></div><div class="wrap"><div class="eyebrow">YATRIO — One platform. Every journey.</div><h1>Explore Nepal.<br>Every journey, connected.</h1><p>Discover journeys, stays, local rides and experiences across Nepal. Start with intercity buses and explore the growing YATRIO travel marketplace.</p></div></section>
@@ -90,4 +90,4 @@ function closeModal(){document.getElementById("modal").classList.remove("show")}
 document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal()});
 searchBuses();
 </script>
-</body></html>
+<script src="/yatrio-motion.js" defer></script><script src="/yatrio-motion.js" defer></script></body></html>

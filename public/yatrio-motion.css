@@ -1,0 +1,16 @@
+/* YATRIO shared motion system — lightweight CSS 3D, no WebGL dependency */
+:root{--yr-motion-ease:cubic-bezier(.2,.75,.25,1)}
+html{scroll-behavior:smooth}
+body.yatrio-motion{isolation:isolate}
+body.yatrio-motion:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 8% 8%,rgba(24,169,153,.075),transparent 34%),radial-gradient(ellipse at 94% 88%,rgba(16,42,67,.055),transparent 38%);opacity:.9}
+.yatrio-motion :where(.panel,.card,.stat,.metric,.shortcut,.booking,.item,.empty,.notice,.search-card,.destination-card,.category-card,.listing-card){transform-style:preserve-3d;backface-visibility:hidden;transition:transform .38s var(--yr-motion-ease),box-shadow .38s var(--yr-motion-ease),border-color .38s var(--yr-motion-ease)}
+.yatrio-motion [data-yatrio-reveal]{opacity:0;transform:translate3d(0,18px,0) scale(.985);transition:opacity .65s var(--yr-motion-ease),transform .65s var(--yr-motion-ease);transition-delay:var(--yr-delay,0ms)}
+.yatrio-motion [data-yatrio-reveal].yr-visible{opacity:1;transform:translate3d(0,0,0) scale(1)}
+.yatrio-motion [data-yatrio-tilt]{will-change:transform;transform:perspective(1000px) rotateX(var(--yr-rx,0deg)) rotateY(var(--yr-ry,0deg)) translateY(var(--yr-lift,0px));}
+.yatrio-motion :where(button,.btn,[role=button]){transition:transform .22s var(--yr-motion-ease),box-shadow .22s var(--yr-motion-ease),filter .22s ease}
+.yatrio-motion :where(button,.btn,[role=button]):hover{transform:translateY(-2px);filter:saturate(1.08);box-shadow:0 9px 22px rgba(16,42,67,.12)}
+.yatrio-motion :where(a,.nav a){transition:color .2s ease,background-color .2s ease}
+.yatrio-motion :where(input,select,textarea):focus{outline:none;box-shadow:0 0 0 3px rgba(24,169,153,.13);border-color:#18a999}
+@media(hover:hover) and (pointer:fine){.yatrio-motion :where(.panel,.card,.stat,.metric,.shortcut,.booking,.item,.empty,.notice,.search-card,.destination-card,.category-card,.listing-card):hover{box-shadow:0 18px 38px rgba(16,42,67,.10);border-color:rgba(24,169,153,.32)}}
+@media(max-width:700px){.yatrio-motion [data-yatrio-tilt]{transform:none!important;will-change:auto}.yatrio-motion [data-yatrio-reveal]{transform:translate3d(0,12px,0)}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.yatrio-motion *,.yatrio-motion *:before,.yatrio-motion *:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.yatrio-motion [data-yatrio-reveal]{opacity:1;transform:none}}
