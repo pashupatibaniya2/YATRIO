@@ -22,6 +22,9 @@ export default async function(req,res) {
   if(exists.rows.length&&target==="approved")return res.status(409).json({error:"The four required documents changed during review. Refresh the application and verify all four documents again."});
   return res.status(404).json({error:"Operator application not found."});
  }
+ if(target==="approved"){
+  await db.query("INSERT INTO operator_referral_codes (operator_id,code) VALUES ($1,$2) ON CONFLICT (operator_id) DO NOTHING",[id,"YTR"+id.replace(/-/g,"").slice(0,8).toUpperCase()]);
+ }
  const message=status==="suspended"?"Operator suspended. Public departures and new reservations are now disabled.":status==="unsuspended"?(target==="approved"?"Operator unsuspended and reactivated.":"Operator unsuspended to pending review because all four required documents are not currently approved."):"Operator status updated.";
  return res.json({operator:updated.rows[0],message});
 }
