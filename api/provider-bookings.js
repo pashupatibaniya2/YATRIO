@@ -1,6 +1,6 @@
 import { db } from "hatchable";
 export const access = "user";
-export const methods = ["GET","PATCH"];
+export const methods = ["GET","PUT"];
 export default async function(req,res) {
   const userId=String(req.user.id);
   if(req.method==="GET") {
