@@ -20,15 +20,15 @@ write = "own"
 
 [db.tables.marketplace_availability]
 read = "public"
-write = "own"
+write = "public"
 
 [db.tables.marketplace_bookings]
 read = "own"
-write = "own"
+write = "public"
 
 [db.tables.marketplace_provider_bookings]
 read = "own"
-write = "member"
+write = "public"
 
 [db.tables.marketplace_provider_booking_actions]
 read = "own"
