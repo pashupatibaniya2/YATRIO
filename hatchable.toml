@@ -14,6 +14,14 @@ write = "own"
 read = "own"
 write = "own"
 
+[db.tables.marketplace_listing_images]
+read = "own"
+write = "own"
+
+[db.tables.bus_fleet_images]
+read = "own"
+write = "own"
+
 [db.tables.marketplace_listings]
 read = "public"
 write = "own"
