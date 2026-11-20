@@ -11,5 +11,6 @@ export default async function(req,res) {
   if(!/^[0-9a-f-]{36}$/i.test(id)||!["approved","rejected"].includes(status)) return res.status(400).json({error:"Provide a document and valid review decision."});
   const updated=await db.query("UPDATE operator_documents SET review_status=$1,verification_status=$1,review_note=$2,reviewed_at=now(),updated_at=now() WHERE id=$3 RETURNING id,document_type,review_status,review_note",[status,note,id]);
   if(!updated.rows.length) return res.status(404).json({error:"Document not found."});
-  return res.json({document:updated.rows[0],message:"Document review saved."});
+  if(status==="rejected") await db.query("UPDATE operators SET status='pending' WHERE id=(SELECT operator_id FROM operator_documents WHERE id=$1) AND status='approved'",[id]);
+  return res.json({document:updated.rows[0],message:"Document review saved. If a previously approved operator no longer has all required approvals, its account has been returned to pending review."});
 }

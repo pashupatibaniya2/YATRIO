@@ -11,7 +11,7 @@ export default async function(req,res) {
     return res.status(400).json({error:"Enter passenger name, phone and select 1–6 valid seats."});
   }
   const { rows: scheduleRows } = await db.query(
-    "SELECT s.fare,s.bus_id,b.operator_id,o.commission_rate FROM schedules s JOIN buses b ON b.id=s.bus_id JOIN operators o ON o.id=b.operator_id WHERE s.id=$1 AND s.status='scheduled' AND s.departure_at > now() AND o.status='approved'",
+    "SELECT s.fare,s.bus_id,b.operator_id,o.commission_rate FROM schedules s JOIN buses b ON b.id=s.bus_id JOIN operators o ON o.id=b.operator_id WHERE s.id=$1 AND s.status='scheduled' AND s.departure_at > now() AND o.status='approved' AND b.status='active'",
     [scheduleId]
   );
   if (!scheduleRows.length) return res.status(404).json({error:"This departure is no longer available."});
