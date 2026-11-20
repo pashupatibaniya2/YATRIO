@@ -18,9 +18,25 @@ write = "own"
 read = "public"
 write = "own"
 
+[db.tables.marketplace_bookings]
+read = "own"
+write = "own"
+
+[db.tables.marketplace_provider_bookings]
+read = "own"
+write = "member"
+
+[db.tables.marketplace_provider_booking_actions]
+read = "own"
+write = "own"
+
 [db.tables.payment_transactions]
 read = "own"
 write = "own"
+
+[[cron]]
+path = "/api/expire-seat-holds"
+schedule = "0 * * * *"
 
 [[secret]]
 name = "KHALTI_SECRET_KEY"

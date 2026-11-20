@@ -20,16 +20,25 @@ export default async function(req,res) {
   if (!Number.isFinite(amount) || amount < 10 || Math.abs(amountPaisa / 100 - amount) > 0.001) return res.status(400).json({error:"Khalti checkout requires an exact NPR amount of at least NPR 10."});
   const secret = await config.get("KHALTI_SECRET_KEY");
   if (!secret) return res.status(503).json({error:"Khalti sandbox is not configured yet. Add the sandbox secret key in the YATRIO Hatchable Setup page."});
+  await db.query("UPDATE payment_transactions SET status='failed',failure_reason='Previous checkout attempt expired or did not finish initiating',updated_at=now() WHERE booking_id=$1 AND user_id=$2 AND ((status='initiated' AND created_at < now()-interval '5 minutes') OR (status='pending' AND expires_at <= now()))",[bookingId,userId]);
   const existing = await db.query(
     "SELECT id,provider_payment_id,checkout_url,status,expires_at FROM payment_transactions WHERE booking_type='marketplace' AND booking_id=$1 AND user_id=$2 AND status IN ('initiated','pending') AND expires_at > now() ORDER BY created_at DESC LIMIT 1",
     [bookingId,userId]
   );
   if (existing.rows.length && existing.rows[0].checkout_url) return res.json({payment_url:existing.rows[0].checkout_url,payment_id:existing.rows[0].id,status:existing.rows[0].status,reused:true});
   const orderId = "YTRIO-" + crypto.randomUUID().replace(/-/g,"").slice(0,20).toUpperCase();
-  const inserted = await db.query(
-    "INSERT INTO payment_transactions (booking_type,booking_id,booking_ref,user_id,provider,mode,amount,amount_paisa,currency,purchase_order_id,status) VALUES ('marketplace',$1,$2,$3,'khalti','sandbox',$4,$5,'NPR',$6,'initiated') RETURNING id",
-    [booking.id,booking.booking_ref,userId,amount,amountPaisa,orderId]
-  );
+  let inserted;
+  try {
+    inserted = await db.query(
+      "INSERT INTO payment_transactions (booking_type,booking_id,booking_ref,user_id,provider,mode,amount,amount_paisa,currency,purchase_order_id,status) VALUES ('marketplace',$1,$2,$3,'khalti','sandbox',$4,$5,'NPR',$6,'initiated') RETURNING id",
+      [booking.id,booking.booking_ref,userId,amount,amountPaisa,orderId]
+    );
+  } catch(e) {
+    const active=await db.query("SELECT id,checkout_url,status FROM payment_transactions WHERE booking_id=$1 AND user_id=$2 AND status IN ('initiated','pending') ORDER BY created_at DESC LIMIT 1",[bookingId,userId]);
+    if(active.rows.length&&active.rows[0].checkout_url) return res.json({payment_url:active.rows[0].checkout_url,payment_id:active.rows[0].id,status:active.rows[0].status,reused:true});
+    if(active.rows.length) return res.status(409).json({error:"A payment attempt is already being prepared. Please wait briefly and retry."});
+    throw e;
+  }
   const paymentId = inserted.rows[0].id;
   try {
     const response = await fetch(BASE + "/epayment/initiate/", {
