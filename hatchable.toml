@@ -1,3 +1,11 @@
 [auth]
 enabled = true
 providers = ["email"]
+
+[db.tables.operator_users]
+read = "own"
+write = "own"
+
+[db.tables.marketplace_providers]
+read = "own"
+write = "own"
