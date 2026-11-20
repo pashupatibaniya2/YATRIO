@@ -74,6 +74,7 @@ let currentSchedule=null,currentSeats=[],selectedSeats=new Set(),currentFare=0;
 const money=n=>"NPR "+Number(n).toLocaleString("en-IN");
 const esc=s=>String(s==null?"":s).replace(/[&<>"\']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","\'":"&#39;"}[c]));
 const dateTomorrow=()=>{const d=new Date();d.setDate(d.getDate()+1);return d.toISOString().slice(0,10)};
+function searchReturnPath(){const p=new URLSearchParams({from:document.getElementById("from").value,to:document.getElementById("to").value,date:document.getElementById("date").value});return "/?"+p.toString()}
 document.getElementById("date").min=dateTomorrow();document.getElementById("date").value=dateTomorrow();const routeParams=new URLSearchParams(location.search);const routeFrom=routeParams.get("from"),routeTo=routeParams.get("to");if(routeFrom&&Array.from(document.getElementById("from").options).some(o=>o.value===routeFrom))document.getElementById("from").value=routeFrom;if(routeTo&&Array.from(document.getElementById("to").options).some(o=>o.value===routeTo))document.getElementById("to").value=routeTo;
 function localTime(v){return new Intl.DateTimeFormat("en-GB",{hour:"2-digit",minute:"2-digit",timeZone:"Asia/Kathmandu"}).format(new Date(v))}
 function prettyDate(v){return new Intl.DateTimeFormat("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"Asia/Kathmandu"}).format(new Date(v))}
@@ -91,6 +92,9 @@ async function searchBuses(){
  }catch(err){box.innerHTML='<div class="empty"><strong>We could not load journeys</strong>'+esc(err.message)+'</div>'}
 }
 async function openSeats(id){
+ let authCheck;try{authCheck=await fetch(API+"/travel-bookings")}catch(e){alert("Could not check your sign-in. Please check your connection and try again.");return}
+ if(authCheck.status===401){location.href="/login.html?next="+encodeURIComponent(searchReturnPath());return}
+ if(!authCheck.ok){alert("Could not verify your account. Please try again.");return}
  currentSchedule=id;selectedSeats.clear();document.getElementById("modal").classList.add("show");document.getElementById("seatStage").style.display="block";document.getElementById("receiptStage").style.display="none";document.getElementById("modalTitle").textContent="Choose your seats";
  const row=document.querySelector('[onclick="openSeats(\''+id+'\')"]');const card=row&&row.closest(".buscard");currentFare=card?Number(card.querySelector(".price strong").textContent.replace(/[^0-9.]/g,"")):0;
  document.getElementById("modalSub").textContent="Select up to 6 seats. Holds expire after 8 minutes.";
@@ -104,7 +108,7 @@ async function reserveSeats(){
  const name=document.getElementById("passengerName").value.trim(),phone=document.getElementById("passengerPhone").value.trim(),email=document.getElementById("passengerEmail").value.trim();
  if(!selectedSeats.size||!name||!phone){alert("Please select at least one seat and enter passenger name and mobile number.");return}
  const btn=document.getElementById("reserveBtn");btn.disabled=true;btn.textContent="Creating reservation…";
- try{const r=await fetch(API+"/bookings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({schedule_id:currentSchedule,seat_ids:[...selectedSeats],passenger_name:name,passenger_phone:phone,passenger_email:email})});const data=await r.json();if(r.status===401){location.href="/login.html?next="+encodeURIComponent("/");return}if(!r.ok)throw new Error(data.error||"Reservation failed");
+ try{const r=await fetch(API+"/bookings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({schedule_id:currentSchedule,seat_ids:[...selectedSeats],passenger_name:name,passenger_phone:phone,passenger_email:email})});const data=await r.json();if(r.status===401){location.href="/login.html?next="+encodeURIComponent(searchReturnPath());return}if(!r.ok)throw new Error(data.error||"Reservation failed");
  document.getElementById("seatStage").style.display="none";const stage=document.getElementById("receiptStage");stage.style.display="block";stage.innerHTML='<div class="receipt"><h3>Reservation reference created</h3><div class="receiptrow"><span>Reference</span><strong>'+data.booking.pnr+'</strong></div><div class="receiptrow"><span>Passenger</span><strong>'+esc(name)+'</strong></div><div class="receiptrow"><span>Seats</span><strong>'+esc(data.seats.join(", "))+'</strong></div><div class="receiptrow"><span>Amount</span><strong>'+money(data.booking.total_amount)+'</strong></div><div class="receiptrow"><span>Status</span><strong>Awaiting payment · Demo</strong></div><p class="smallmuted">'+esc(data.message)+'</p></div><button class="confirm" style="width:100%;margin-top:16px" onclick="closeModal();searchBuses()">Done</button>';
  document.getElementById("modalTitle").textContent="Your reservation";document.getElementById("modalSub").textContent="This is a demonstration booking, not a valid travel ticket.";
  }catch(e){alert(e.message)}finally{btn.disabled=false;btn.textContent="Continue to reserve →"}
