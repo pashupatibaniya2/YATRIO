@@ -1,0 +1,59 @@
+/* YATRIO V38 — premium photo-led visual layer. Uses the project's verified local destination photography. */
+:root{--yr-ink:#102a43;--yr-teal:#18a999;--yr-paper:#f4f7f8}
+body.yatrio-home,body.yatrio-travel,body.yatrio-explore,body.yatrio-planner{background:linear-gradient(180deg,#f8fafb 0%,#f1f6f6 100%);color:#172b3a}
+.yatrio-home .hero{background-image:linear-gradient(90deg,rgba(8,29,46,.94) 0%,rgba(8,35,52,.84) 43%,rgba(8,35,52,.36) 100%),url('/images/pokhara.jpg');background-size:cover;background-position:center 43%;background-repeat:no-repeat}
+.yatrio-home .hero:after{border-color:#ffffff2b;box-shadow:0 0 0 55px #ffffff0b,0 0 0 110px #ffffff08}
+.yatrio-home .hero-scene{opacity:.72;filter:drop-shadow(0 18px 28px #061b2a55)}
+.yatrio-home #routes{padding:28px;border-radius:24px;overflow:hidden;background:linear-gradient(100deg,rgba(9,31,48,.94),rgba(10,44,59,.76)),url('/images/ilam.jpg') center 48%/cover;box-shadow:0 22px 50px #102a4318}
+.yatrio-home #routes .sectionhead h2{color:#fff}
+.yatrio-home #routes .sectionhead p{color:#d1e3e7}
+.yatrio-home #routes .routecard{border-color:#ffffff2c;background:rgba(255,255,255,.94);backdrop-filter:blur(8px)}
+.yatrio-home #routes .routecard:hover{background:#fff;box-shadow:0 16px 32px #061b2a40}
+.yatrio-home .notice{box-shadow:0 8px 24px #102a4308}
+.yatrio-home .home-destinations{padding:4px 0}
+.yatrio-home .home-dest-card{min-height:260px}
+.yatrio-home footer{background:linear-gradient(110deg,#0d253b,#164f60 65%,#14766e);position:relative;overflow:hidden}
+.yatrio-home footer:before{content:"";position:absolute;inset:0;background:url('/images/lumbini.jpg') center 48%/cover;opacity:.12;mix-blend-mode:screen;pointer-events:none}
+.yatrio-travel .hero{background-image:linear-gradient(90deg,rgba(8,29,46,.94) 0%,rgba(8,35,52,.82) 48%,rgba(8,35,52,.3) 100%),url('/images/ilam.jpg');background-size:cover;background-position:center 48%;background-repeat:no-repeat}
+.yatrio-travel .hero-art{opacity:.55;filter:drop-shadow(0 16px 28px #061b2a66)}
+.yatrio-travel .cat{position:relative;overflow:hidden;padding-top:132px;background:rgba(255,255,255,.97);box-shadow:0 12px 30px #102a430b}
+.yatrio-travel .catphoto{position:absolute;inset:0 0 auto;height:112px;background-image:linear-gradient(180deg,rgba(7,25,40,.05),rgba(7,25,40,.48)),var(--category-photo);background-size:cover;background-position:center 48%;transition:background-position .6s ease,filter .4s ease}
+.yatrio-travel .cat:hover .catphoto{background-position:center 58%;filter:saturate(1.14)}
+.yatrio-travel .cat .caticon{position:relative;margin-top:-2px;box-shadow:0 6px 16px #102a4312}
+.yatrio-travel .partner{background-image:linear-gradient(90deg,rgba(255,255,255,.98) 0%,rgba(255,255,255,.96) 52%,rgba(255,255,255,.82) 100%),url('/images/chitwan.jpg');background-size:cover;background-position:center 46%;box-shadow:0 18px 42px #102a4310}
+.yatrio-travel footer{background:linear-gradient(110deg,#0d253b,#164f60 70%,#14766e)}
+.yatrio-explore .hero{background-image:linear-gradient(90deg,rgba(8,29,46,.93),rgba(8,42,55,.72)),url('/images/chitwan.jpg');background-size:cover;background-position:center 46%;background-repeat:no-repeat;padding:60px 0 68px}
+.yatrio-explore .hero:after{background:linear-gradient(135deg,#f5d58d,#18a999);opacity:.23}
+.yatrio-explore .filters{box-shadow:0 18px 42px #102a4318;border-color:#dce8eb}
+.yatrio-explore .photo{background-image:linear-gradient(180deg,rgba(7,25,40,.05),rgba(7,25,40,.5)),var(--listing-photo,linear-gradient(135deg,#d8ece6,#a5d2c8));background-size:cover;background-position:center 48%;display:flex;align-items:flex-end;justify-content:flex-start;padding:16px;color:#fff;text-shadow:0 2px 10px #061b2a88}
+.yatrio-explore .photo:after{border-color:#ffffff65;box-shadow:0 0 0 22px #ffffff12,0 0 0 44px #ffffff0c}
+.yatrio-explore .card{box-shadow:0 12px 30px #102a4310}
+.yatrio-explore .inspiration{margin:32px 0 12px}
+.yatrio-explore .inspiration-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.yatrio-explore .inspiration-card{position:relative;display:flex;align-items:flex-end;min-height:190px;padding:17px;border-radius:16px;overflow:hidden;color:#fff;background-image:linear-gradient(180deg,rgba(7,25,40,.02) 18%,rgba(7,25,40,.78) 100%),var(--inspiration-photo);background-size:cover;background-position:center;box-shadow:0 12px 30px #102a4318;transition:transform .35s ease,box-shadow .35s ease}
+.yatrio-explore .inspiration-card:hover{transform:translateY(-5px);box-shadow:0 22px 38px #102a4328;background-position:center 56%}
+.yatrio-explore .inspiration-card strong{display:block;font:800 20px Manrope;letter-spacing:-.5px}
+.yatrio-explore .inspiration-card small{display:block;margin-top:5px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#e2f3f0}
+.yatrio-explore .inspiration-kicker{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:#168779;font-weight:800}
+.yatrio-planner .hero{background-image:linear-gradient(90deg,rgba(8,29,46,.94) 0%,rgba(8,35,52,.8) 55%,rgba(8,35,52,.32) 100%),url('/images/lumbini.jpg');background-size:cover;background-position:center 47%;background-repeat:no-repeat}
+.yatrio-planner .hero-orb{opacity:.5}
+.yatrio-planner .hero-peak{opacity:.58;filter:drop-shadow(0 18px 18px #061b2a55)}
+.yatrio-planner .planner{box-shadow:0 24px 60px #102a4320;border-color:#e0e9ed}
+.yatrio-planner .trip-summary{box-shadow:0 16px 36px #102a4310}
+.yatrio-planner .summary-photo{min-height:260px}
+.yatrio-planner .day{box-shadow:0 8px 24px #102a4308}
+.yatrio-planner footer{background:linear-gradient(110deg,#0d253b,#164f60 70%,#14766e)}
+/* Clear focus and touch behaviour */
+.yatrio-home a:focus-visible,.yatrio-travel a:focus-visible,.yatrio-explore a:focus-visible,.yatrio-planner a:focus-visible,.yatrio-home button:focus-visible,.yatrio-travel button:focus-visible,.yatrio-explore button:focus-visible,.yatrio-planner button:focus-visible{outline:3px solid #f2b84b;outline-offset:3px}
+@media(max-width:850px){.yatrio-explore .inspiration-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.yatrio-home #routes{padding:22px}}
+@media(max-width:560px){.yatrio-home .hero{background-position:center 42%}.yatrio-home .hero-scene{opacity:.34}.yatrio-home #routes{padding:18px;border-radius:18px}.yatrio-travel .hero-art{opacity:.22}.yatrio-explore .hero{padding:48px 0 58px}.yatrio-explore .inspiration-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.yatrio-explore .inspiration-card{min-height:150px;padding:12px}.yatrio-explore .inspiration-card strong{font-size:17px}.yatrio-planner .hero-peak{opacity:.22}}
+@media(prefers-reduced-motion:reduce){.yatrio-explore .inspiration-card,.yatrio-travel .catphoto{transition:none}}
+
+/* Explicit local image assignments keep cards photo-rich even without provider-supplied media. */
+.yatrio-travel .cat-buses .catphoto{background-image:linear-gradient(180deg,#07192805,#07192880),url('/images/pokhara.jpg')}
+.yatrio-travel .cat-stays .catphoto{background-image:linear-gradient(180deg,#07192805,#07192880),url('/images/lumbini.jpg')}
+.yatrio-travel .cat-rides .catphoto{background-image:linear-gradient(180deg,#07192805,#07192880),url('/images/ilam.jpg')}
+.yatrio-travel .cat-experiences .catphoto{background-image:linear-gradient(180deg,#07192805,#07192880),url('/images/chitwan.jpg')}
+.yatrio-explore .photo-stays{--listing-photo:url('/images/pokhara.jpg')}
+.yatrio-explore .photo-rides{--listing-photo:url('/images/ilam.jpg')}
+.yatrio-explore .photo-experiences{--listing-photo:url('/images/chitwan.jpg')}

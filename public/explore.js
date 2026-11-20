@@ -1,6 +1,7 @@
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const labels={stays:"Hotel & stay",rides:"Local ride & transfer",experiences:"Tour & experience"};
 const units={per_person:"per person",per_night:"per night",per_vehicle:"per vehicle",per_trip:"per trip",per_booking:"per booking"};
+const listingPhotos={stays:"/images/pokhara.jpg",rides:"/images/ilam.jpg",experiences:"/images/chitwan.jpg"};
 let current=null;
 const requestedCategory=new URLSearchParams(location.search).get("category");
 if(requestedCategory && ["stays","rides","experiences"].includes(requestedCategory)) document.querySelector("#filters [name=category]").value=requestedCategory;
@@ -14,7 +15,7 @@ async function load(){
  if(!r.ok)throw new Error(d.error||"Unable to load listings");
  document.getElementById("resultCount").textContent=d.count+" currently bookable partner listings";
  if(!d.listings.length){root.innerHTML='<div class="empty"><b>No bookable listings found yet.</b><br>Try another destination or check back as partners join YATRIO.</div>';return;}
- root.innerHTML=d.listings.map(x=>'<article class="card"><div class="photo">'+(x.category_slug==="stays"?"⌂":x.category_slug==="rides"?"🚙":"✦")+'</div><div class="body"><div class="meta">'+esc(labels[x.category_slug]||x.category_slug)+' · '+esc(x.city)+'</div><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||"A service from "+x.business_name)+'</p><div class="price">NPR '+Number(x.price_from).toLocaleString("en-IN")+' <small>/ '+esc(units[x.price_unit]||x.price_unit)+'</small></div><p style="min-height:0;margin:6px 0 0">Provided by '+esc(x.business_name)+'</p><button class="btn" onclick="openListing(\''+x.id+'\')">View availability</button></div></article>').join("");
+ root.innerHTML=d.listings.map(x=>'<article class="card"><div class="photo photo-'+esc(x.category_slug)+'">'+(x.category_slug==="stays"?"⌂":x.category_slug==="rides"?"🚙":"✦")+'</div><div class="body"><div class="meta">'+esc(labels[x.category_slug]||x.category_slug)+' · '+esc(x.city)+'</div><h3>'+esc(x.title)+'</h3><p>'+esc(x.description||"A service from "+x.business_name)+'</p><div class="price">NPR '+Number(x.price_from).toLocaleString("en-IN")+' <small>/ '+esc(units[x.price_unit]||x.price_unit)+'</small></div><p style="min-height:0;margin:6px 0 0">Provided by '+esc(x.business_name)+'</p><button class="btn" onclick="openListing(\''+x.id+'\')">View availability</button></div></article>').join("");
 }
 async function openListing(id){
  const modal=document.getElementById("modal"),detail=document.getElementById("detail");modal.classList.add("open");detail.innerHTML="<p>Loading service details…</p>";

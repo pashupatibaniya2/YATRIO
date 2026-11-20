@@ -45,6 +45,8 @@ const extensions = {
 };
 const form = document.getElementById("plannerForm");
 const destination = document.getElementById("destination");
+const requestedDestination = new URLSearchParams(location.search).get("destination");
+if(requestedDestination && Object.prototype.hasOwnProperty.call(plans,requestedDestination)) destination.value=requestedDestination;
 function renderPlan(shouldScroll){
   const origin=document.getElementById("origin").value;
   const dest=destination.value;
