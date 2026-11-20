@@ -6,6 +6,10 @@ providers = ["email"]
 read = "own"
 write = "own"
 
+[db.tables.operator_documents]
+read = "own"
+write = "own"
+
 [db.tables.marketplace_providers]
 read = "own"
 write = "own"
