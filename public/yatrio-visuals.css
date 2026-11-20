@@ -50,7 +50,7 @@ body.yatrio-home,body.yatrio-travel,body.yatrio-explore,body.yatrio-planner{back
 @media(prefers-reduced-motion:reduce){.yatrio-explore .inspiration-card,.yatrio-travel .catphoto{transition:none}}
 
 /* Explicit local image assignments keep cards photo-rich even without provider-supplied media. */
-.yatrio-travel .cat-buses .catphoto{background-image:linear-gradient(180deg,#07192805,#07192880),url('/images/pokhara.jpg')}
+.yatrio-travel .cat-buses .catphoto{background-image:linear-gradient(180deg,#07192805,#07192880),url('/images/fleet-demo-exterior.jpg')}
 .yatrio-travel .cat-stays .catphoto{background-image:linear-gradient(180deg,#07192805,#07192880),url('/images/lumbini.jpg')}
 .yatrio-travel .cat-rides .catphoto{background-image:linear-gradient(180deg,#07192805,#07192880),url('/images/ilam.jpg')}
 .yatrio-travel .cat-experiences .catphoto{background-image:linear-gradient(180deg,#07192805,#07192880),url('/images/chitwan.jpg')}

@@ -22,6 +22,10 @@ write = "own"
 read = "own"
 write = "own"
 
+[db.tables.operator_reviews]
+read = "own"
+write = "own"
+
 [db.tables.marketplace_listings]
 read = "public"
 write = "own"
