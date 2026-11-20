@@ -9,7 +9,7 @@ export default async function(req,res) {
   }
   const id=String(req.body?.document_id||""), status=String(req.body?.review_status||""), note=String(req.body?.review_note||"").trim().slice(0,500);
   if(!/^[0-9a-f-]{36}$/i.test(id)||!["approved","rejected"].includes(status)) return res.status(400).json({error:"Provide a document and valid review decision."});
-  const updated=await db.query("UPDATE operator_documents SET review_status=$1,review_note=$2,reviewed_at=now(),updated_at=now() WHERE id=$3 RETURNING id,document_type,review_status,review_note",[status,note,id]);
+  const updated=await db.query("UPDATE operator_documents SET review_status=$1,verification_status=$1,review_note=$2,reviewed_at=now(),updated_at=now() WHERE id=$3 RETURNING id,document_type,review_status,review_note",[status,note,id]);
   if(!updated.rows.length) return res.status(404).json({error:"Document not found."});
   return res.json({document:updated.rows[0],message:"Document review saved."});
 }

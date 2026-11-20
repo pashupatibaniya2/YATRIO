@@ -1,0 +1,13 @@
+ALTER TABLE operator_documents ADD COLUMN IF NOT EXISTS storage_key TEXT;
+ALTER TABLE operator_documents ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT '';
+ALTER TABLE operator_documents ADD COLUMN IF NOT EXISTS original_filename TEXT NOT NULL DEFAULT '';
+ALTER TABLE operator_documents ADD COLUMN IF NOT EXISTS content_type TEXT NOT NULL DEFAULT 'application/octet-stream';
+ALTER TABLE operator_documents ADD COLUMN IF NOT EXISTS bytes INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE operator_documents ADD COLUMN IF NOT EXISTS review_status TEXT NOT NULL DEFAULT 'pending';
+ALTER TABLE operator_documents ADD COLUMN IF NOT EXISTS review_note TEXT NOT NULL DEFAULT '';
+ALTER TABLE operator_documents ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMPTZ;
+ALTER TABLE operator_documents ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
+UPDATE operator_documents SET storage_key=file_reference WHERE storage_key IS NULL;
+UPDATE operator_documents d SET user_id=o.owner_user_id FROM operators o WHERE d.operator_id=o.id AND d.user_id='';
+ALTER TABLE operator_documents ALTER COLUMN storage_key SET NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_operator_documents_one_type ON operator_documents(operator_id,document_type);

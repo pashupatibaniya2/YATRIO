@@ -31,7 +31,7 @@ export default async function(req,res) {
   const key="operator-documents/"+op.id+"/"+type+"-"+crypto.randomUUID()+"."+ext;
   await storage.put(key,file.buffer,file.contentType);
   const saved=await db.query(
-    "INSERT INTO operator_documents (operator_id,user_id,document_type,storage_key,original_filename,content_type,bytes,review_status,review_note,reviewed_at,updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,'pending','',NULL,now()) ON CONFLICT (operator_id,document_type) DO UPDATE SET user_id=EXCLUDED.user_id,storage_key=EXCLUDED.storage_key,original_filename=EXCLUDED.original_filename,content_type=EXCLUDED.content_type,bytes=EXCLUDED.bytes,review_status='pending',review_note='',reviewed_at=NULL,updated_at=now() RETURNING id,document_type,original_filename,bytes,review_status,review_note,created_at,updated_at",
+    "INSERT INTO operator_documents (operator_id,user_id,document_type,file_reference,storage_key,original_filename,content_type,bytes,verification_status,review_status,review_note,reviewed_at,updated_at) VALUES ($1,$2,$3,$4,$4,$5,$6,$7,'pending','pending','',NULL,now()) ON CONFLICT (operator_id,document_type) DO UPDATE SET user_id=EXCLUDED.user_id,file_reference=EXCLUDED.file_reference,storage_key=EXCLUDED.storage_key,original_filename=EXCLUDED.original_filename,content_type=EXCLUDED.content_type,bytes=EXCLUDED.bytes,verification_status='pending',review_status='pending',review_note='',reviewed_at=NULL,updated_at=now() RETURNING id,document_type,original_filename,bytes,review_status,review_note,created_at,updated_at",
     [op.id,uid,type,key,String(file.filename||"document").slice(0,180),file.contentType,file.buffer.length]
   );
   if(previous?.storage_key && previous.storage_key!==key) await storage.del(previous.storage_key);
