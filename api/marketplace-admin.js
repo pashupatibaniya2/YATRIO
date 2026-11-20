@@ -12,7 +12,15 @@ export default async function(req,res) {
   const id=String(req.body.provider_id||"");
   const status=String(req.body.status||"");
   const note=String(req.body.admin_note||"").trim().slice(0,500);
-  if(!/^[0-9a-f-]{36}$/i.test(id)||!["approved","rejected","suspended"].includes(status)) return res.status(400).json({error:"Provide a valid provider and review status."});
+  if(!/^[0-9a-f-]{36}$/i.test(id)) return res.status(400).json({error:"Provide a valid provider id."});
+  if(req.body.action==="delete") {
+    await db.query("DELETE FROM marketplace_bookings WHERE provider_id=$1",[id]);
+    await db.query("DELETE FROM marketplace_listings WHERE provider_id=$1",[id]);
+    const deleted=await db.query("DELETE FROM marketplace_providers WHERE id=$1 RETURNING id,business_name",[id]);
+    if(!deleted.rows.length) return res.status(404).json({error:"Partner application not found."});
+    return res.json({provider:deleted.rows[0],message:"Provider and its marketplace listings were deleted."});
+  }
+  if(!["approved","rejected","suspended"].includes(status)) return res.status(400).json({error:"Choose approved, rejected or suspended."});
   const result=await db.query("UPDATE marketplace_providers SET status=$1,admin_note=$2,updated_at=now() WHERE id=$3 RETURNING id,business_name,description,commission_rate,category_slug,status,admin_note",[status,note,id]);
   if(!result.rows.length) return res.status(404).json({error:"Partner application not found."});
   const provider=result.rows[0];
