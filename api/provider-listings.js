@@ -19,9 +19,9 @@ export default async function(req,res) {
     const image=String(req.body.cover_image_url||"").trim();
     if(!["stays","rides","experiences"].includes(category)) return res.status(400).json({error:"This listing category is not enabled in the generic marketplace yet. Bus schedules continue in the bus operator portal."});
     if(title.length<3||city.length<2||!Number.isFinite(price)||price<=0||!["per_person","per_night","per_vehicle","per_trip","per_booking"].includes(unit)) return res.status(400).json({error:"Enter a title, city, valid positive price and supported price unit."});
-    const provider=await db.query("SELECT id FROM marketplace_providers WHERE user_id=$1 AND category_slug=$2 AND status='approved'",[userId,category]);
+    const provider=await db.query("SELECT id,business_name,description,commission_rate FROM marketplace_providers WHERE user_id=$1 AND category_slug=$2 AND status='approved'",[userId,category]);
     if(!provider.rows.length) return res.status(403).json({error:"An approved provider account for this category is required before creating listings."});
-    const result=await db.query("INSERT INTO marketplace_listings (provider_id,user_id,category_slug,title,description,city,province,address,price_from,price_unit,cover_image_url,status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'draft') RETURNING id,title,category_slug,city,price_from,price_unit,status",[provider.rows[0].id,userId,category,title,description,city,province,address,price,unit,image]);
+    const result=await db.query("INSERT INTO marketplace_listings (provider_id,user_id,category_slug,title,description,city,province,address,price_from,price_unit,cover_image_url,provider_business_name,provider_description,provider_commission_rate,status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'draft') RETURNING id,title,category_slug,city,price_from,price_unit,status",[provider.rows[0].id,userId,category,title,description,city,province,address,price,unit,image,provider.rows[0].business_name,provider.rows[0].description,provider.rows[0].commission_rate]);
     return res.status(201).json({listing:result.rows[0],message:"Listing saved as a draft. Add availability before publishing."});
   }
   const id=String(req.body.listing_id||"");

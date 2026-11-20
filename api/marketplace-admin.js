@@ -13,7 +13,9 @@ export default async function(req,res) {
   const status=String(req.body.status||"");
   const note=String(req.body.admin_note||"").trim().slice(0,500);
   if(!/^[0-9a-f-]{36}$/i.test(id)||!["approved","rejected","suspended"].includes(status)) return res.status(400).json({error:"Provide a valid provider and review status."});
-  const result=await db.query("UPDATE marketplace_providers SET status=$1,admin_note=$2,updated_at=now() WHERE id=$3 RETURNING id,business_name,category_slug,status,admin_note",[status,note,id]);
+  const result=await db.query("UPDATE marketplace_providers SET status=$1,admin_note=$2,updated_at=now() WHERE id=$3 RETURNING id,business_name,description,commission_rate,category_slug,status,admin_note",[status,note,id]);
   if(!result.rows.length) return res.status(404).json({error:"Partner application not found."});
-  res.json({provider:result.rows[0],message:"Partner application status updated."});
+  const provider=result.rows[0];
+  await db.query("UPDATE marketplace_listings SET provider_business_name=$1,provider_description=$2,provider_commission_rate=$3,status=CASE WHEN $4<>'approved' AND status='published' THEN 'paused' ELSE status END,updated_at=now() WHERE provider_id=$5",[provider.business_name,provider.description,provider.commission_rate,status,id]);
+  res.json({provider,message:"Partner application status updated."});
 }
