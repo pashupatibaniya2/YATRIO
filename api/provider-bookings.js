@@ -4,7 +4,7 @@ export const methods = ["GET","PATCH"];
 export default async function(req,res) {
   const userId=String(req.user.id);
   if(req.method==="GET") {
-    const result=await db.query("SELECT b.id,b.booking_ref,b.category_slug,b.quantity,b.traveler_name,b.traveler_email,b.traveler_phone,b.customer_note,b.currency,b.unit_price,b.total_amount,b.commission_rate,b.commission_amount,b.provider_payout_amount,b.status,b.payment_status,b.created_at,l.title,l.city,a.starts_at,a.ends_at FROM marketplace_bookings b JOIN marketplace_listings l ON l.id=b.listing_id WHERE b.provider_user_id=$1 ORDER BY b.created_at DESC LIMIT 200",[userId]);
+    const result=await db.query("SELECT b.id,b.booking_ref,b.category_slug,b.quantity,b.traveler_name,b.traveler_email,b.traveler_phone,b.customer_note,b.currency,b.unit_price,b.total_amount,b.commission_rate,b.commission_amount,b.provider_payout_amount,b.status,b.payment_status,b.created_at,l.title,l.city,a.starts_at,a.ends_at FROM marketplace_bookings b JOIN marketplace_listings l ON l.id=b.listing_id JOIN marketplace_availability a ON a.id=b.availability_id WHERE b.provider_user_id=$1 ORDER BY b.created_at DESC LIMIT 200",[userId]);
     return res.json({bookings:result.rows});
   }
   const id=String(req.body.booking_id||"");
