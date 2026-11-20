@@ -9,3 +9,11 @@ write = "own"
 [db.tables.marketplace_providers]
 read = "own"
 write = "own"
+
+[db.tables.marketplace_listings]
+read = "public"
+write = "own"
+
+[db.tables.marketplace_availability]
+read = "public"
+write = "own"

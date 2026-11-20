@@ -4,7 +4,7 @@ async function loadMarketplace(){
   const r = await fetch("/api/marketplace");
   const data = await r.json();
   if(!r.ok) throw new Error(data.error || "Marketplace could not load");
-  document.getElementById("categories").innerHTML = data.categories.map(c => '<a class="cat" href="'+(c.slug==="buses"?"/":"#partner")+'"><div class="caticon">'+(icons[c.slug]||"✦")+'</div><h3>'+esc(c.name)+'</h3><p>'+esc(c.description)+'</p><span class="catfoot">'+(c.slug==="buses"?"SEARCH BUS JOURNEYS →":"PARTNER NETWORK OPEN · "+c.verified_providers+" VERIFIED")+'</span></a>').join("");
+  document.getElementById("categories").innerHTML = data.categories.map(c => '<a class="cat" href="'+(c.slug==="buses"?"/":"/explore.html?category="+c.slug)+'"><div class="caticon">'+(icons[c.slug]||"✦")+'</div><h3>'+esc(c.name)+'</h3><p>'+esc(c.description)+'</p><span class="catfoot">'+(c.slug==="buses"?"SEARCH BUS JOURNEYS →":"PARTNER NETWORK OPEN · "+c.verified_providers+" VERIFIED")+'</span></a>').join("");
   document.getElementById("destinationsGrid").innerHTML = data.destinations.map((d,i) => '<article class="dest"><div class="destart" style="background:linear-gradient(135deg,'+(i%2?"#dcebdc,#9ec9b9":"#d8e9ef,#9dc8c7")+')"></div><div class="destbody"><h3>'+esc(d.name)+'</h3><p>'+esc(d.tagline)+' · '+esc(d.province)+'</p><div class="tags">'+d.highlights.map(x=>'<span class="tag">'+esc(x)+'</span>').join("")+'</div></div></article>').join("");
 }
 document.getElementById("partnerForm").addEventListener("submit",async e=>{
