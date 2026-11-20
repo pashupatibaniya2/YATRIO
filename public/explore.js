@@ -4,6 +4,8 @@ const units={per_person:"per person",per_night:"per night",per_vehicle:"per vehi
 let current=null;
 const requestedCategory=new URLSearchParams(location.search).get("category");
 if(requestedCategory && ["stays","rides","experiences"].includes(requestedCategory)) document.querySelector("#filters [name=category]").value=requestedCategory;
+const requestedCity=new URLSearchParams(location.search).get("city");
+if(requestedCity) document.querySelector("#filters [name=city]").value=requestedCity;
 async function load(){
  const f=new FormData(document.getElementById("filters"));
  const params=new URLSearchParams();for(const [k,v] of f.entries())if(v.trim())params.set(k,v.trim());
