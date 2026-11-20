@@ -13,4 +13,26 @@ body.yatrio-motion:before{content:"";position:fixed;inset:0;z-index:-1;pointer-e
 .yatrio-motion :where(input,select,textarea):focus{outline:none;box-shadow:0 0 0 3px rgba(24,169,153,.13);border-color:#18a999}
 @media(hover:hover) and (pointer:fine){.yatrio-motion :where(.panel,.card,.stat,.metric,.shortcut,.booking,.item,.empty,.notice,.search-card,.destination-card,.category-card,.listing-card):hover{box-shadow:0 18px 38px rgba(16,42,67,.10);border-color:rgba(24,169,153,.32)}}
 @media(max-width:700px){.yatrio-motion [data-yatrio-tilt]{transform:none!important;will-change:auto}.yatrio-motion [data-yatrio-reveal]{transform:translate3d(0,12px,0)}}
+/* V20 immersive depth layer */
+.hero-scene{transform-style:preserve-3d;will-change:transform;transition:transform .25s ease-out}
+.hero-scene:after{content:"";position:absolute;inset:12% 5% 8%;pointer-events:none;background:radial-gradient(circle at 22% 22%,#b9fff0aa 0 1px,transparent 2px),radial-gradient(circle at 72% 14%,#fff8d088 0 2px,transparent 3px),radial-gradient(circle at 48% 65%,#b9fff077 0 1px,transparent 2px);background-size:120px 100px;animation:yrStarDrift 12s linear infinite;opacity:.75}
+.hero-scene .mountain{animation:yrMountainFloat 7s ease-in-out infinite;filter:drop-shadow(0 22px 15px #061b2a66)}
+.hero-scene .mountain.two{animation-delay:-2.1s}.hero-scene .mountain.three{animation-delay:-4s}
+.hero-scene .scene-sun{animation:sunPulse 5s ease-in-out infinite,yrSunGlow 7s ease-in-out infinite}
+.hero-scene .scene-road{overflow:visible}
+.hero-scene .scene-road:after{content:"";position:absolute;width:11px;height:11px;border-radius:50%;background:#fff;box-shadow:0 0 0 5px #a7e7d944,0 0 20px #a7e7d9;left:18%;top:14px;animation:yrRouteTravel 5s ease-in-out infinite}
+.hero-scene .scene-bus{animation:busFloat 4s ease-in-out infinite,yrBusShine 5s ease-in-out infinite}
+@keyframes yrStarDrift{from{background-position:0 0,0 0,0 0}to{background-position:120px -100px,-120px 100px,60px -100px}}
+@keyframes yrMountainFloat{0%,100%{translate:0 0}50%{translate:0 -7px}}
+@keyframes yrSunGlow{0%,100%{box-shadow:0 0 45px #f2b84b55}50%{box-shadow:0 0 85px #f2b84b99}}
+@keyframes yrRouteTravel{0%{left:18%;opacity:0}15%{opacity:1}85%{opacity:1}100%{left:83%;opacity:0}}
+@keyframes yrBusShine{0%,100%{filter:drop-shadow(0 10px 15px #061b2a44)}50%{filter:drop-shadow(0 18px 25px #061b2a88)}}
+.yatrio-motion :where(.panel,.card,.stat,.metric,.shortcut,.booking,.item,.buscard,.routecard,.listing-card,.category-card,.destination-card){transform-style:preserve-3d;backface-visibility:hidden}
+.yatrio-motion :where(.panel,.card,.stat,.metric,.shortcut,.booking,.item,.buscard,.routecard,.listing-card,.category-card,.destination-card):hover{box-shadow:0 22px 44px rgba(16,42,67,.14);border-color:rgba(24,169,153,.42)}
+.yatrio-motion :where(.brandmark,.oplogo,.symbol){transition:transform .35s cubic-bezier(.2,.75,.25,1),box-shadow .35s ease}
+.yatrio-motion :where(.brandmark,.oplogo,.symbol):hover{transform:translateY(-4px) rotateY(18deg) rotateX(8deg);box-shadow:0 12px 24px rgba(24,169,153,.22)}
+.yatrio-motion .yr-new-content{animation:yrContentPop .55s cubic-bezier(.2,.75,.25,1) both}
+@keyframes yrContentPop{from{opacity:0;transform:translateY(20px) scale(.975)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.hero-scene:after,.hero-scene .mountain,.hero-scene .scene-road:after{animation:none!important}}
+
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.yatrio-motion *,.yatrio-motion *:before,.yatrio-motion *:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.yatrio-motion [data-yatrio-reveal]{opacity:1;transform:none}}
