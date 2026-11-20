@@ -29,8 +29,8 @@ body.yatrio-motion:before{content:"";position:fixed;inset:0;z-index:-1;pointer-e
 .dest:hover .dest-photo-shade{transform:translateX(120%)}
 .dest:hover .destart.photo-dest{filter:saturate(1.12)}
 .dest{box-shadow:0 10px 28px #102a430d}
-@media(max-width:850px){.destart.photo-dest{height:205px}}
-@media(max-width:560px){.destart.photo-dest{height:175px}.destart.photo-dest .dest-photo-caption{font-size:20px}}
+@media(max-width:850px){.destart.photo-dest,.destart:not(.photo-dest){height:205px}}
+@media(max-width:560px){.destart.photo-dest,.destart:not(.photo-dest){height:175px}.destart.photo-dest .dest-photo-caption,.destart:not(.photo-dest) .dest-photo-caption{font-size:20px}}
 @media(prefers-reduced-motion:reduce){.destart.photo-dest .dest-photo-shade{display:none}}
 
 /* V21 cinematic destination and route-map experience */
