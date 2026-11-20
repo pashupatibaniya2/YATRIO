@@ -2,6 +2,8 @@ const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;"
 const labels={stays:"Hotel & stay",rides:"Local ride & transfer",experiences:"Tour & experience"};
 const units={per_person:"per person",per_night:"per night",per_vehicle:"per vehicle",per_trip:"per trip",per_booking:"per booking"};
 let current=null;
+const requestedCategory=new URLSearchParams(location.search).get("category");
+if(requestedCategory && ["stays","rides","experiences"].includes(requestedCategory)) document.querySelector("#filters [name=category]").value=requestedCategory;
 async function load(){
  const f=new FormData(document.getElementById("filters"));
  const params=new URLSearchParams();for(const [k,v] of f.entries())if(v.trim())params.set(k,v.trim());
