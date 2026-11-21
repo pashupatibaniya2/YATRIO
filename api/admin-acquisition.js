@@ -45,7 +45,7 @@ export default async function(req,res) {
   if(action==="set_target") {
     const province=clean(body.province,80),district=clean(body.district,100),target=Number(body.target_count);
     if(!province||!district||!Number.isInteger(target)||target<0||target>5000) return res.status(400).json({error:"Choose a valid district and a whole-number target from 0 to 5,000."});
-    const result=await db.query("UPDATE operator_acquisition_targets SET target_count=$1,updated_by=$2,updated_at=now() WHERE province=$3 AND district=$4 RETURNING province,district,target_count",[target,String(req.user.id),province,district]);
+    const result=await db.query("UPDATE operator_acquisition_targets SET target_count=$1,updated_by=$2,updated_at=now() WHERE province=$3 AND district=$4 RETURNING province,district,target_count",[target,String(req.member?.id||"admin"),province,district]);
     if(!result.rows.length) return res.status(404).json({error:"District not found."});
     return res.json({target:result.rows[0]});
   }
