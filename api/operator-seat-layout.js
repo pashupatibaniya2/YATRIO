@@ -31,7 +31,7 @@ export default async function(req,res){
  if(!/^[0-9a-f-]{36}$/i.test(busId))return res.status(400).json({error:"A valid bus_id is required."});
  const bus=(await db.query("SELECT id,capacity,bus_type,seat_layout_config FROM buses WHERE id=$1 AND operator_id=$2",[busId,op.id])).rows[0];
  if(!bus)return res.status(404).json({error:"Bus not found in your operator account."});
- const existing=(await db.query("SELECT seat_number,seat_type FROM bus_seats WHERE bus_id=$1 ORDER BY seat_number",[busId])).rows;
+ const existing=(await db.query("SELECT seat_number,seat_type FROM bus_seats WHERE bus_id=$1",[busId])).rows.sort((a,b)=>String(a.seat_number).localeCompare(String(b.seat_number),undefined,{numeric:true,sensitivity:"base"}));
  if(req.method==="GET"){
   const configured=Array.isArray(bus.seat_layout_config?.seats)?bus.seat_layout_config.seats:null;
   const defaults=defaultSeats(existing,Number(bus.capacity),bus.bus_type);
