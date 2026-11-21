@@ -11,7 +11,7 @@ export default async function(req,res) {
   if(provider!=="khalti") return res.status(400).json({error:"This wallet is not enabled yet. Khalti sandbox is the first supported checkout."});
   const userId=String(req.user.id);
   const found=await db.query(
-    "SELECT id,pnr,total_amount,currency,status,customer_user_id,hold_expires_at,passenger_name,passenger_email,passenger_phone FROM bookings WHERE id=$1 AND customer_user_id=$2",
+    "SELECT id,pnr,total_amount,currency,status,customer_user_id,hold_expires_at,passenger_name,passenger_email,passenger_phone FROM bookings b WHERE b.id=$1 AND b.customer_user_id=$2 AND (SELECT count(*) FROM seat_inventory si WHERE si.booking_id=b.id AND si.status='held' AND si.hold_expires_at>now())=cardinality(b.seat_numbers)",
     [bookingId,userId]
   );
   if(!found.rows.length) return res.status(404).json({error:"Bus reservation not found."});
