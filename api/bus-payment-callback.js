@@ -32,6 +32,17 @@ export default async function(req,res) {
     return res.redirect(SITE+"/my-trips.html?payment=review&ref="+encodeURIComponent(payment.booking_ref));
   }
   const status=String(verification.status||"").toLowerCase();
+  if(status==="completed" && verification.refunded===true) {
+    await db.transaction([
+      {sql:"UPDATE payment_transactions SET status='refunded',provider_payload=$1::jsonb,updated_at=now() WHERE id=$2 AND status<>'succeeded'",params:[JSON.stringify(verification),payment.id]},
+      {sql:"UPDATE bookings SET status='payment_review' WHERE id=$1 AND status='confirmed'",params:[payment.booking_id]}
+    ]);
+    return res.redirect(SITE+"/my-trips.html?payment=refunded&ref="+encodeURIComponent(payment.booking_ref));
+  }
+  if(status==="completed" && !verification.transaction_id) {
+    await db.query("UPDATE payment_transactions SET status='pending',failure_reason='Khalti completed response missing transaction ID; manual verification required',provider_payload=$1::jsonb,updated_at=now() WHERE id=$2 AND status<>'succeeded'",[JSON.stringify(verification),payment.id]);
+    return res.redirect(SITE+"/my-trips.html?payment=review&ref="+encodeURIComponent(payment.booking_ref));
+  }
   if(status==="completed") {
     const tx=await db.transaction([
       {sql:"UPDATE bookings SET status=CASE WHEN hold_expires_at>now() AND (SELECT count(*) FROM seat_inventory WHERE booking_id=$1 AND status='held' AND hold_expires_at>now())=cardinality(seat_numbers) THEN 'confirmed' ELSE 'payment_review' END,payment_mode='khalti',hold_expires_at=NULL WHERE id=$1 AND status IN ('awaiting_payment','expired','cancelled') RETURNING status",params:[payment.booking_id]},
