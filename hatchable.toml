@@ -62,6 +62,10 @@ write = "own"
 read = "own"
 write = "own"
 
+[db.tables.communication_threads]
+read = "own"
+write = "own"
+
 [db.tables.communication_thread_members]
 read = "own"
 write = "own"
