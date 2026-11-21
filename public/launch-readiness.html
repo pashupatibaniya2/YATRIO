@@ -13,7 +13,7 @@
 <script>
 const groups=[
 {title:"1. Core product & 3D booking experience",items:[
-["Upgrade the seat selector to a realistic interactive 3D bus model","Replace the current CSS perspective cabin with a proper 3D model; retain clickable seats, accessibility and a non-WebGL fallback.","high"],
+["Validate the new interactive 3D bus cabin on target devices","A Three.js WebGL coach interior with selectable 3D seats is now deployed. Verify Android/iOS/desktop GPU compatibility, touch controls, screen-reader fallback and performance on low-end devices.","high"],
 ["Add distinct vehicle layouts","Support 2+2 coach, 2+1 sofa, deluxe and sleeper/berth layouts; map each layout to operator-configured seat inventory.","high"],
 ["Complete signed-in end-to-end booking tests","Test search, seat hold, login, passenger details, booking creation, payment return and ticket/document visibility with test accounts.","blocker"],
 ["Validate seat inventory under concurrency","Simulate two customers selecting the same seat, hold expiry, duplicate requests and payment arriving after a hold expires.","blocker"]]},
