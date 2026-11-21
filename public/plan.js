@@ -183,7 +183,7 @@ function setupActualSpend(){
  const ids=["actualBus","actualHotel","actualFood","actualLocal","actualActivities"];
  const money=n=>"NPR "+Math.round(n).toLocaleString("en-IN");
  const update=()=>{const actual=ids.reduce((s,id)=>s+Math.max(0,Number(document.getElementById(id).value)||0),0);const estimate=Number(JSON.parse(document.getElementById("budgetCopy").dataset.summary||"{}").total||0);document.getElementById("actualGrand").textContent=money(actual);document.getElementById("actualEstimate").textContent=money(estimate);document.getElementById("actualVariance").textContent=(actual>estimate?"+":"")+money(actual-estimate);};
- ids.forEach(id=>document.getElementById(id).addEventListener("input",update));document.getElementById("budgetCopy").addEventListener("click",update);update();
+ ids.forEach(id=>document.getElementById(id).addEventListener("input",update));["budgetPeople","budgetNights","budgetBus","budgetHotel","budgetFood","budgetLocal","budgetActivities"].forEach(id=>document.getElementById(id).addEventListener("input",update));document.getElementById("budgetCopy").addEventListener("click",update);update();
 }
 function setupTripActions(origin,dest,days,style){
  const root=document.getElementById("tripResult");
@@ -194,7 +194,7 @@ function setupTripActions(origin,dest,days,style){
   saveBtn.disabled=true;saveBtn.textContent="Saving…";
   try{
    const budget=JSON.parse(document.getElementById("budgetCopy").dataset.summary||"{}");
-   const actual={bus:Number(actualBus.value)||0,hotel:Number(actualHotel.value)||0,meals:Number(actualFood.value)||0,localTransport:Number(actualLocal.value)||0,activities:Number(actualActivities.value)||0};
+   const actual={bus:Number(document.getElementById("actualBus").value)||0,hotel:Number(document.getElementById("actualHotel").value)||0,meals:Number(document.getElementById("actualFood").value)||0,localTransport:Number(document.getElementById("actualLocal").value)||0,activities:Number(document.getElementById("actualActivities").value)||0};
    const itinerary=[...root.querySelectorAll(".day")].map(x=>({title:x.querySelector("h3")?.textContent||"",description:x.querySelector("p")?.textContent||"",note:x.querySelector("small")?.textContent||""}));
    const wishlist=[...root.querySelectorAll(".wish-btn.active")].map(x=>x.dataset.place);
    const title=prompt("Name this trip",dest+" getaway");
