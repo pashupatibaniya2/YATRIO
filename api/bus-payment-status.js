@@ -16,12 +16,12 @@ export default async function(req,res) {
   if(!/^[0-9a-f-]{36}$/i.test(paymentId)) return res.status(400).json({error:"A valid payment ID is required."});
   const userId=String(req.user.id);
   const found=await db.query(
-    "SELECT id,booking_id,booking_ref,user_id,provider,provider_payment_id,status,amount,amount_paisa FROM payment_transactions WHERE id=$1 AND user_id=$2 AND booking_type='bus' AND provider='fonepay' AND mode='production' LIMIT 1",
+    "SELECT id,booking_id,booking_ref,user_id,provider,provider_payment_id,status,amount,amount_paisa,(SELECT status FROM bookings WHERE id=payment_transactions.booking_id) AS booking_status FROM payment_transactions WHERE id=$1 AND user_id=$2 AND booking_type='bus' AND provider='fonepay' AND mode='production' LIMIT 1",
     [paymentId,userId]
   );
   if(!found.rows.length) return res.status(404).json({error:"Fonepay payment was not found."});
   const payment=found.rows[0];
-  if(payment.status==="succeeded") return res.json({status:"succeeded",booking_ref:payment.booking_ref,verified:true});
+  if(payment.status==="succeeded") return res.json({status:"succeeded",booking_status:payment.booking_status,booking_ref:payment.booking_ref,verified:true});
   if(["failed","cancelled","refunded"].includes(payment.status)) return res.json({status:payment.status,booking_ref:payment.booking_ref,verified:false});
   if(!payment.provider_payment_id) return res.status(409).json({error:"Fonepay payment reference is missing."});
 
