@@ -84,6 +84,35 @@ const form = document.getElementById("plannerForm");
 const destination = document.getElementById("destination");
 const requestedDestination = new URLSearchParams(location.search).get("destination");
 if(requestedDestination && Object.prototype.hasOwnProperty.call(plans,requestedDestination)) destination.value=requestedDestination;
+const nearbyAttractions={
+  "Pokhara":[["Phewa Lake & Tal Barahi","Lakeside waterfront and island temple; check boat conditions"],["Sarangkot","Popular sunrise and Himalayan viewpoint; weather dependent"],["World Peace Pagoda","Hilltop stupa and lake views"],["Davis Falls & Gupteshwor Cave","Paired city attractions; check local opening/access"]],
+  "Chitwan":[["Chitwan National Park","Protected-area experiences with authorised guides and permits"],["Tharu Cultural Museum","Learn about local Tharu heritage; check opening hours"],["Bishazari Tal","Wetland and birdlife area; local access guidance advised"],["Rapti River waterfront","Riverside walks around Sauraha; follow wildlife safety guidance"]],
+  "Lumbini":[["Maya Devi Temple","Sacred Garden and birthplace tradition site"],["Ashoka Pillar","Historic pillar within the sacred complex"],["World Peace Pagoda","Peace pagoda and monastic landscape"],["International Monastic Zone","Monasteries representing different Buddhist traditions"]],
+  "Ilam":[["Kanyam Tea Garden","Tea estates and rolling green hills"],["Antu Danda","Sunrise viewpoint; visibility depends on weather"],["Mai Pokhari","Ramsar wetland and forested surroundings"],["Fikkal Bazaar","Local market and tea-country gateway"]],
+  "Kathmandu":[["Pashupatinath Temple","Major Hindu temple complex; observe visitor rules"],["Boudhanath Stupa","Large Buddhist stupa and surrounding lanes"],["Swayambhunath","Hilltop stupa with valley views"],["Kathmandu Durbar Square","Historic palace square and living heritage"]],
+  "Bhaktapur":[["Bhaktapur Durbar Square","Historic palace square and temples"],["Nyatapola Temple","Five-storey pagoda at Taumadhi Square"],["Pottery Square","Traditional pottery workshops and lanes"],["Dattatreya Square","Historic temples, woodwork and courtyards"]],
+  "Lalitpur (Patan)":[["Patan Durbar Square","Historic palace complex and courtyards"],["Patan Museum","Nepalese art and cultural collections"],["Golden Temple (Hiranya Varna Mahavihar)","Historic Buddhist monastery"],["Kumbheshwar Temple","Traditional temple complex"]],
+  "Nagarkot":[["Nagarkot View Tower","Panoramic Himalayan viewpoint; weather dependent"],["Nagarkot Nature Trail","Short walks through hill villages"],["Kali Devi Temple","Local hilltop shrine"],["Changunarayan Temple","Historic temple site on the nearby ridge"]],
+  "Bandipur":[["Bandipur Bazaar","Preserved hill-town streets and Newari architecture"],["Thani Mai Temple","Hilltop viewpoint above Bandipur"],["Siddha Cave","Large cave; visit with local guidance"],["Tundikhel","Open ridge with mountain views"]],
+  "Gorkha":[["Gorkha Durbar","Historic palace and temple complex"],["Gorakhnath Cave","Religious cave below the palace"],["Manakamana Temple","Popular hilltop temple; cable car access varies"],["Ligligkot","Historic ridge and viewpoint"]],
+  "Jomsom":[["Marpha Village","Traditional stone houses and apple orchards"],["Kagbeni","Historic village near the Kali Gandaki corridor"],["Dhumba Lake","High-altitude lake near Jomsom"],["Thini Village","Traditional settlement and mountain views"]],
+  "Mustang":[["Muktinath Temple","Important pilgrimage site; high-altitude conditions apply"],["Lo Manthang","Walled historic settlement; permits and access rules apply"],["Kagbeni","Historic gateway village"],["Chhoser Cave","Cave complex; local access and permits may apply"]],
+  "Manang":[["Bhraka Monastery","Historic monastery near Manang village"],["Gangapurna Lake","Glacial lake and mountain scenery"],["Manang village","Traditional Himalayan settlement"],["Ice Lake (Kicho Tal)","High-altitude hike; acclimatisation essential"]],
+  "Lukla":[["Lukla Bazaar","Gateway town and trekking services"],["Chheplung Village","Traditional village on the trail"],["Phakding","Riverside village on the Everest trail"],["Namche Bazaar","Major Sherpa town; reached by trek, not a nearby road trip"]],
+  "Everest Region":[["Namche Bazaar","Sherpa hub and acclimatisation stop"],["Tengboche Monastery","Famous monastery with mountain views"],["Hotel Everest View area","High-altitude viewpoint; access depends on route and weather"],["Sagarmatha National Park","Protected Himalayan landscape; permits required"]],
+  "Rara Lake":[["Rara Lake","Alpine lake inside Rara National Park"],["Murma Top","Panoramic viewpoint; hike and weather dependent"],["Rara National Park","Protected area with local conservation rules"],["Talcha Airport area","Regional access point; flights are weather dependent"]],
+  "Bardiya":[["Bardiya National Park","Wildlife experiences with authorised guides"],["Tharu villages","Community-led cultural experiences"],["Karnali River","River landscape and local activities"],["Babai Valley","Scenic protected-area landscape; access restrictions apply"]],
+  "Koshi Tappu":[["Koshi Tappu Wildlife Reserve","Wetland reserve and birdwatching"],["Koshi Barrage","River and wetland viewpoint"],["Arjundhara","Regional temple stop"],["Local wetlands","Seasonal birdlife; use local guides"]],
+  "Janakpur":[["Janaki Mandir","Landmark temple dedicated to Sita"],["Ram Mandir","Historic temple near the central market"],["Dhanush Sagar","Sacred pond near Janaki Mandir"],["Ram Sita Vivah Mandap","Temple complex associated with the Ramayana"]],
+  "Dharan":[["Budha Subba Temple","Popular local shrine"],["Dantakali Temple","Hilltop religious site"],["Pindeshwor Temple","Historic temple in central Dharan"],["Bhedetar","Nearby hill station and viewpoints"]],
+  "Biratnagar":[["Baraha Kshetra","Important pilgrimage area; allow road-transfer time"],["Biratnagar Jute Mills area","Industrial heritage context; access may be restricted"],["Koshi Tappu Wildlife Reserve","Wetland reserve reached by road transfer"],["Haat Bazaar","Local market experience; market days vary"]],
+  "Butwal":[["Manimukunda Sen Park","Historic garden and archaeological area"],["Siddha Baba Temple","Temple on the Butwal-Palpa road"],["Jitgadhi Fort","Historic fort site"],["Tilaurakot","Ancient archaeological site; longer regional transfer"]],
+  "Hetauda":[["Makwanpur Gadhi","Historic fort and hilltop setting"],["Martyr Memorial Park","Memorial park and gardens"],["Churia foothills","Nature and forest landscapes; local access advised"],["Indrasarovar","Reservoir area requiring a road transfer"]],
+  "Tansen":[["Rani Mahal","Historic palace beside the Kali Gandaki River; road/foot access varies"],["Tansen Durbar","Historic town landmark"],["Srinagar Hill","Town and Himalayan viewpoint"],["Amar Narayan Temple","Traditional pagoda-style temple"]],
+  "Nepalgunj":[["Bageshwori Temple","Major regional temple"],["Jungeshwar Mahadev","Local religious site"],["Banke National Park","Protected forest and wildlife area; guided access advised"],["Tharu cultural areas","Community-led cultural experiences"]],
+  "Dhangadhi":[["Shuklaphanta National Park","Grassland and wildlife reserve; permits and guide advised"],["Jokhar Lake","Local wetland and nature area"],["Ghodaghodi Lake","Ramsar wetland; longer regional transfer"],["Behada Baba Temple","Popular regional shrine"]],
+  "Bhedetar":[["Charles Point","Hilltop viewpoint"],["Namaste Falls","Waterfall near the hill station; seasonal flow"],["Pathibhara Temple (Dharan)","Regional shrine requiring a road transfer"],["Dharan Bazaar","Nearby city markets and food stops"]]
+};
 function renderPlan(shouldScroll){
   const origin=document.getElementById("origin").value;
   const dest=destination.value;
@@ -97,6 +126,8 @@ function renderPlan(shouldScroll){
   const label=style==="nature"?"Nature & outdoors":style==="culture"?"Culture & heritage":style==="relaxed"?"Slow & relaxed":"A little of everything";
   const photo=data.image ? "background-image:linear-gradient(90deg,#102a4310,#102a4366),url('"+data.image+"')" : "background-image:linear-gradient(135deg,#174b63,#18a999)";
   const daysHtml=selected.map((item,i)=>'<article class="day" style="animation-delay:'+(i*.06)+'s"><div class="day-number">D'+(i+1)+'</div><div><h3>'+esc(item[0])+'</h3><p>'+esc(item[1])+'</p><small>'+esc(item[2])+'</small></div></article>').join("");
+  const nearby=nearbyAttractions[dest]||[];
+  const nearbyHtml=nearby.map((p,i)=>'<article class="nearby-item"><span class="day-number" style="width:30px;height:30px;font-size:11px">'+(i+1)+'</span><div><b>'+esc(p[0])+'</b><small>'+esc(p[1])+'</small></div></article>').join("");
   const busOrigin=origin==="Chitwan"?"Sauraha":origin;
   const busDest=dest==="Chitwan"?"Sauraha":dest==="Kathmandu"?"Kathmandu":dest;
   const supportedBusDest=["Sauraha","Pokhara","Kathmandu","Butwal","Biratnagar","Dharan"];
@@ -105,7 +136,27 @@ function renderPlan(shouldScroll){
   const busLabel=hasDirectRoute?"Check Kathmandu bus search →":"Browse bus search (availability varies) →";
   const serviceUrl="/explore.html?city="+encodeURIComponent(dest==="Chitwan"?"Sauraha":dest);
   document.getElementById("tripResult").innerHTML='<div class="sectionhead"><div><h2>Your suggested itinerary</h2><p>Use this as a flexible starting point and adapt it to your dates.</p></div><span class="step">'+days+' DAYS · '+esc(label.toUpperCase())+'</span></div><div class="trip-summary"><div class="summary-photo" role="img" aria-label="'+esc(dest)+' landscape" style="'+photo+'"></div><div class="summary-copy"><div class="eyebrow">'+esc(data.region)+' · NEPAL</div><h3>'+esc(dest==="Kathmandu"?"Kathmandu Valley":dest)+'</h3><p>'+esc(data.intro)+'</p><div class="summary-meta"><span class="meta-pill">Starting from '+esc(origin)+'</span><span class="meta-pill">'+days+' day outline</span><span class="meta-pill">'+esc(label)+'</span></div></div></div><div class="days">'+daysHtml+'</div><div class="actions"><a class="action primary" href="'+busUrl+'">'+busLabel+'</a><a class="action secondary" href="'+serviceUrl+'">Browse local travel services →</a></div>';
+  const resultRoot=document.getElementById("tripResult");
+  resultRoot.querySelector(".days").insertAdjacentHTML("afterend",'<div class="connection-grid"><section class="connection-panel"><div class="connection-kicker">Explore around your destination</div><h3>Famous places nearby</h3><p>Suggested attractions to help shape each day. Check distances and opening hours locally.</p><div class="nearby-grid">'+(nearbyHtml||'<div class="inventory-empty">Ask a local host for nearby highlights.</div>')+'</div></section><section class="connection-panel"><div class="connection-kicker">Stay & transport</div><h3>Hotels and stays</h3><p>Published partner stays with upcoming availability, when listed.</p><div class="inventory-list" id="planStays"><div class="inventory-empty">Checking partner stays…</div></div><div style="margin-top:12px"><h3>Bus options</h3><p>Upcoming schedules for your selected starting city and destination.</p><div class="inventory-list" id="planBuses"><div class="inventory-empty">Checking bus schedules…</div></div></div></section></div>');
+  loadTripConnections(busOrigin,busDest,dest);
   if(shouldScroll) document.getElementById("tripResult").scrollIntoView({behavior:"smooth",block:"start"});
+}
+async function loadTripConnections(origin,destinationName,displayDestination){
+  const stayRoot=document.getElementById("planStays"),busRoot=document.getElementById("planBuses");
+  const city=displayDestination==="Chitwan"?"Sauraha":displayDestination==="Lalitpur (Patan)"?"Lalitpur":displayDestination==="Everest Region"?"Lukla":displayDestination;
+  const stayUrl="/explore.html?category=stays&city="+encodeURIComponent(city);
+  try{
+    const response=await fetch("/api/marketplace-listings?category=stays&city="+encodeURIComponent(city));
+    const data=await response.json();
+    if(!response.ok)throw new Error(data.error||"Stay search unavailable");
+    stayRoot.innerHTML=data.listings.length?data.listings.slice(0,3).map(x=>'<article class="inventory-item">'+(x.images&&x.images[0]?'<img src="'+esc(x.images[0].url)+'" alt="'+esc(x.images[0].alt_text||x.title)+'">':'<div class="day-number" style="width:54px;height:54px">⌂</div>')+'<div class="item-copy"><b>'+esc(x.title)+'</b><small>'+esc(x.business_name)+' · '+esc(x.city)+' · '+Number(x.available_quantity||0)+' available</small><div class="price">NPR '+Number(x.price_from).toLocaleString("en-IN")+' / '+esc(x.price_unit.replace("per_",""))+'</div></div></article>').join(""):'<div class="inventory-empty">No published hotel or stay listings with upcoming availability in '+esc(city)+' yet. You can still browse the stay category as local partners join.</div>';
+  }catch(error){stayRoot.innerHTML='<div class="inventory-empty">Could not load stays right now. <a href="'+stayUrl+'">Open stay search</a>.</div>';}
+  try{
+    const response=await fetch("/api/search?from="+encodeURIComponent(origin)+"&to="+encodeURIComponent(destinationName));
+    const data=await response.json();
+    if(!response.ok)throw new Error(data.error||"Bus search unavailable");
+    busRoot.innerHTML=data.results.length?data.results.slice(0,3).map(x=>'<article class="inventory-item"><div class="day-number" style="width:54px;height:54px">BUS</div><div class="item-copy"><b>'+esc(x.operator_name)+' · '+esc(x.bus_name)+'</b><small>'+esc(x.origin_terminal)+' → '+esc(x.destination_terminal)+' · '+new Date(x.departure_at).toLocaleString("en-GB",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Kathmandu"})+'</small><div class="price">NPR '+Number(x.fare).toLocaleString("en-IN")+' · '+Number(x.available_seats)+' seats shown</div></div></article>').join(""):'<div class="inventory-empty">No upcoming published bus schedule was found for '+esc(origin)+' → '+esc(destinationName)+'. Try another starting city or browse the bus search.</div>';
+  }catch(error){busRoot.innerHTML='<div class="inventory-empty">Could not load bus schedules right now. <a href="/?from='+encodeURIComponent(origin)+'&to='+encodeURIComponent(destinationName)+'">Open bus search</a>.</div>';}
 }
 form.addEventListener("submit",e=>{e.preventDefault();renderPlan(true)});
 destination.addEventListener("change",()=>{if(document.getElementById("tripResult").querySelector(".days"))renderPlan(false)});
