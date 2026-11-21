@@ -80,6 +80,11 @@ required = false
 description = "Fonepay production signing secret issued to YATRIO."
 
 [[secret]]
-name = "FONEPAY_GATEWAY_URL"
+name = "FONEPAY_USERNAME"
 required = false
-description = "Exact production checkout URL supplied by Fonepay for YATRIO merchant integration."
+description = "Fonepay production merchant API username. Keep server-side only."
+
+[[secret]]
+name = "FONEPAY_PASSWORD"
+required = false
+description = "Fonepay production merchant API password. Keep server-side only."
