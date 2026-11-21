@@ -58,6 +58,10 @@ write = "own"
 read = "own"
 write = "own"
 
+[db.tables.booking_notifications]
+read = "own"
+write = "own"
+
 [db.tables.shared_trip_views]
 read = "public"
 write = "own"

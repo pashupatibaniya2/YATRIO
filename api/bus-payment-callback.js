@@ -1,4 +1,5 @@
 import { db, config } from "hatchable";
+import { notifyBooking } from "lib/booking-notifications.js";
 export const access = "public";
 export const methods = ["GET"];
 const SITE="https://yatrio-nepal-bus.hatchable.site";
@@ -18,7 +19,12 @@ async function finish(payment,verification,providerRef){
     {sql:"UPDATE seat_inventory SET status='booked',hold_token=NULL,hold_expires_at=NULL WHERE booking_id=$1 AND status='held' AND EXISTS (SELECT 1 FROM bookings WHERE id=$1 AND status='confirmed')",params:[payment.booking_id]},
     {sql:"UPDATE payment_transactions SET status='succeeded',provider_payment_id=COALESCE($1,provider_payment_id),failure_reason=NULL,provider_payload=$2::jsonb,verified_at=now(),updated_at=now() WHERE id=$3 AND status<>'succeeded'",params:[providerRef||null,JSON.stringify(verification),payment.id]}
   ]);
-  return tx.results?.[0]?.rows?.[0]?.status||"payment_review";
+  const finalStatus=tx.results?.[0]?.rows?.[0]?.status||"payment_review";
+  try {
+    const booking=await db.query("SELECT b.customer_user_id,b.passenger_email,b.passenger_name,b.pnr,b.total_amount,b.currency,s.departure_at,bus.name AS service_name FROM bookings b JOIN schedules s ON s.id=b.schedule_id JOIN buses bus ON bus.id=s.bus_id WHERE b.id=$1",[payment.booking_id]);
+    if(booking.rows.length){const b=booking.rows[0];await notifyBooking({userId:String(payment.user_id||b.customer_user_id||""),bookingType:"bus",bookingId:payment.booking_id,bookingRef:b.pnr,eventType:finalStatus==="confirmed"?"bus_paid":"bus_review",to:b.passenger_email,name:b.passenger_name,service:b.service_name,amount:b.total_amount,currency:b.currency,when:b.departure_at});}
+  } catch(e) { console.error("Verified bus payment notification could not be recorded."); }
+  return finalStatus;
 }
 export default async function(req,res){
   const provider=String(req.query?.provider||"khalti").toLowerCase();

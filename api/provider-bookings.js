@@ -1,4 +1,5 @@
 import { db } from "hatchable";
+import { notifyBooking } from "lib/booking-notifications.js";
 export const access = "user";
 export const methods = ["GET","PUT"];
 export default async function(req,res) {
@@ -23,6 +24,7 @@ export default async function(req,res) {
       [userId,id]
     );
     if(!result.rows.length) return res.status(404).json({error:"Booking not found for this provider."});
+    try { const info=await db.query("SELECT b.user_id,b.traveler_email,b.traveler_name,b.booking_ref,b.total_amount,b.currency,l.title,a.starts_at FROM marketplace_bookings b JOIN marketplace_listings l ON l.id=b.listing_id JOIN marketplace_availability a ON a.id=b.availability_id WHERE b.id=$1",[id]); if(info.rows.length){const x=info.rows[0];await notifyBooking({userId:x.user_id,bookingType:"marketplace",bookingId:id,bookingRef:x.booking_ref,eventType:action==="confirm"?"marketplace_confirmed":"marketplace_rejected",to:x.traveler_email,name:x.traveler_name,service:x.title,amount:x.total_amount,currency:x.currency,when:x.starts_at});} } catch(e) { console.error("Provider decision notification could not be recorded."); }
     return res.json({booking:result.rows[0],message:action==="confirm"?"Provider confirmed the request. Payment is still not collected.":"Booking request rejected and availability released."});
   } catch(e) {
     return res.status(409).json({error:"Booking is no longer pending or is not assigned to your provider account."});

@@ -1,4 +1,5 @@
 import { db, config } from "hatchable";
+import { notifyBooking } from "lib/booking-notifications.js";
 export const access = "user";
 export const methods = ["GET"];
 const BASE = "https://dev.khalti.com/api/v2";
@@ -48,6 +49,7 @@ export default async function(req,res) {
       }
     ]);
     if (!result.results[1].rowCount) return res.status(409).json({error:"Payment was verified, but the booking is no longer eligible for confirmation. Contact YATRIO support before retrying."});
+    try { const b=await db.query("SELECT user_id,traveler_email,traveler_name,booking_ref,total_amount,currency,l.title,a.starts_at FROM marketplace_bookings JOIN marketplace_listings l ON l.id=marketplace_bookings.listing_id JOIN marketplace_availability a ON a.id=marketplace_bookings.availability_id WHERE marketplace_bookings.id=$1",[payment.booking_id]); if(b.rows.length){const x=b.rows[0];await notifyBooking({userId:x.user_id,bookingType:"marketplace",bookingId:payment.booking_id,bookingRef:x.booking_ref,eventType:"marketplace_paid",to:x.traveler_email,name:x.traveler_name,service:x.title,amount:x.total_amount,currency:x.currency,when:x.starts_at});} } catch(e) { console.error("Verified marketplace payment notification could not be recorded."); }
     return res.json({status:"succeeded",booking_ref:payment.booking_ref,message:"Khalti confirmed the payment and YATRIO updated your booking."});
   }
   if (status === "refunded") {

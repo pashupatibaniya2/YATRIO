@@ -1,4 +1,5 @@
 import { db, config } from "hatchable";
+import { notifyBooking } from "lib/booking-notifications.js";
 export const access = "user";
 export const methods = ["POST"];
 
@@ -52,6 +53,7 @@ export default async function(req,res) {
       {sql:"UPDATE payment_transactions SET status='succeeded',provider_payment_id=$1,failure_reason=NULL,provider_payload=COALESCE(provider_payload,'{}'::jsonb)||$2::jsonb,verified_at=now(),updated_at=now() WHERE id=$3 AND status<>'succeeded'",params:[prn,JSON.stringify(verification),payment.id]}
     ]);
     const bookingStatus=tx.results?.[0]?.rows?.[0]?.status||"payment_review";
+    try { const b=await db.query("SELECT customer_user_id,passenger_email,passenger_name,pnr,total_amount,currency,s.departure_at,b.name AS service_name FROM bookings JOIN schedules s ON s.id=bookings.schedule_id JOIN buses b ON b.id=s.bus_id WHERE bookings.id=$1",[payment.booking_id]); if(b.rows.length){const x=b.rows[0];await notifyBooking({userId:String(payment.user_id),bookingType:"bus",bookingId:payment.booking_id,bookingRef:x.pnr,eventType:bookingStatus==="confirmed"?"bus_paid":"bus_review",to:x.passenger_email,name:x.passenger_name,service:x.service_name,amount:x.total_amount,currency:x.currency,when:x.departure_at});} } catch(e) { console.error("Verified Fonepay notification could not be recorded."); }
     return res.json({status:"succeeded",booking_status:bookingStatus,booking_ref:payment.booking_ref,verified:true,trace_id:String(data.fonepayTraceId)});
   }
   if(providerStatus==="failed") {

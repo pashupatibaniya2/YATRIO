@@ -9,5 +9,5 @@ export default async function(req,res){
   db.query("SELECT b.id,b.booking_ref,'marketplace' AS booking_type,b.traveler_name,b.traveler_email,b.traveler_phone,b.quantity,b.currency,b.total_amount,b.status,b.payment_status,b.created_at,p.business_name AS provider_name,l.title AS service_name,l.city AS origin_city,a.starts_at AS departure_at,a.ends_at AS arrival_at FROM marketplace_bookings b JOIN marketplace_listings l ON l.id=b.listing_id JOIN marketplace_providers p ON p.id=b.provider_id JOIN marketplace_availability a ON a.id=b.availability_id WHERE b.user_id=$1 ORDER BY b.created_at DESC LIMIT 100",[uid])
  ]);
  const bookings=[...bus.rows,...market.rows].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
- return res.json({documents:bookings.map(x=>({...x,document_type:x.payment_status==="paid"||x.payment_status==="succeeded"?"paid_booking_receipt":"booking_summary",is_paid:x.payment_status==="paid"||x.payment_status==="succeeded"}))});
+ return res.json({documents:bookings.map(x=>{const isPaid=x.payment_status==="paid"||x.payment_status==="succeeded";const isTicket=x.booking_type==="bus"&&x.status==="confirmed"&&isPaid;return {...x,document_type:isTicket?"confirmed_bus_ticket":isPaid?"paid_booking_receipt":"booking_summary",is_paid:isPaid,is_ticket:isTicket};})});
 }
