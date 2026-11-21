@@ -43,7 +43,7 @@
   function buildCabin(list){
    clearCabin();layout=detectLayout(list);const cfg=readConfig(),sleeper=layout==="sleeper-2x1",twoPlusOne=layout!=="coach-2x2";
    cabinWidth=(Number(cfg.cabin_width)||2.45)*2;rowSpacing=(Number(cfg.row_spacing)||.74)*2;if(sleeper)rowSpacing=Math.max(rowSpacing,1.65);
-   const perRow=twoPlusOne?3:4;rowCount=Math.max(3,Math.ceil(list.length/perRow));cabinLength=rowCount*rowSpacing+3.5;
+   const configured=Array.isArray(cfg.seats)?cfg.seats:[],layoutByNumber=new Map(configured.map(s=>[String(s.seat_number),s])),perRow=twoPlusOne?3:4;const placements=list.map((b,i)=>{const saved=layoutByNumber.get(b.textContent.trim());return {b,i,saved,row:Number(saved?.row)||Math.floor(i/perRow)+1,col:Number(saved?.col)||i%perRow+1}});const maxCol=Math.max(1,...placements.map(p=>p.col));rowCount=Math.max(3,...placements.map(p=>p.row));cabinLength=rowCount*rowSpacing+3.5;
    const floor=mat(0x849ca5),wall=mat(cfg.interior_color||"#e5eef0"),dark=mat(0x17394b),glass=new THREE.MeshPhysicalMaterial({color:0x9bd7e2,transparent:true,opacity:.48,roughness:.2});
    cube(cabin,cabinWidth,.2,cabinLength,floor,0,.08,0);cube(cabin,cabinWidth+.1,.16,cabinLength+.4,wall,0,-.04,0);
    cube(cabin,.16,1.6,cabinLength,wall,-cabinWidth/2,.9,0);cube(cabin,.16,1.6,cabinLength,wall,cabinWidth/2,.9,0);
@@ -55,11 +55,11 @@
    cube(cabin,cabinWidth*.96,.1,.12,mat(0xa5b9bf),0,2.45,0);
    for(let z=-cabinLength/2+1;z<cabinLength/2;z+=2.5)cube(cabin,.9,.04,.16,mat(0xffedc0),0,2.36,z);
    seatNormal=mat(cfg.seat_color||"#2e6474");seatEdge=mat(0x173f50);seatChosen=mat(0x08a991);seatUnavailable=mat(0x9baab0);
-   const slots=twoPlusOne?[-cabinWidth*.24,-cabinWidth*.10,cabinWidth*.22]:[-cabinWidth*.30,-cabinWidth*.16,cabinWidth*.16,cabinWidth*.30];
-   list.forEach((b,i)=>{
-    const row=Math.floor(i/perRow),col=i%perRow,x=slots[col],z=-cabinLength/2+1.9+row*rowSpacing;
+   const slots=maxCol<=3?[-cabinWidth*.24,-cabinWidth*.10,cabinWidth*.22]:[-cabinWidth*.30,-cabinWidth*.16,cabinWidth*.16,cabinWidth*.30];
+   placements.forEach(({b,row,col,saved})=>{
+    const x=slots[Math.max(0,Math.min(slots.length-1,col-1))],z=-cabinLength/2+1.9+((row-1)*rowSpacing);
     const g=new THREE.Group();g.position.set(x,.18,z);g.userData.id=b.dataset.seatId;
-    const seatType=(b.title||"").toLowerCase(),isBed=sleeper||/sleeper|berth|bed/.test(seatType);
+    const seatType=String(saved?.seat_type||b.title||"").toLowerCase(),isBed=sleeper||/sleeper|berth|bed/.test(seatType);
     const w=isBed ? Math.min(.78,cabinWidth*.16) : Math.min(.72,cabinWidth*.145),d=isBed ? rowSpacing*.88 : .74;
     const parts=[];
     if(isBed){

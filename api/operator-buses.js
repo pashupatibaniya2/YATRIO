@@ -7,7 +7,8 @@ function cleanLayoutConfig(input,type){
  const layout=["auto","coach_2x2","sofa_2x1","sleeper_2x1"].includes(raw.layout)?raw.layout:"auto";
  const color=(v,fallback)=>/^#[0-9a-f]{6}$/i.test(String(v||""))?String(v).toLowerCase():fallback;
  const width=Number(raw.cabin_width),spacing=Number(raw.row_spacing);
- return {layout,cabin_width:Number.isFinite(width)?Math.max(2.1,Math.min(2.7,width)):2.45,row_spacing:Number.isFinite(spacing)?Math.max(.6,Math.min(1.05,spacing)):.74,interior_color:color(raw.interior_color,"#e5eef0"),seat_color:color(raw.seat_color,"#2e6474")};
+ const seats=Array.isArray(raw.seats)?raw.seats.slice(0,80).map(s=>({seat_number:String(s.seat_number||"").trim().toUpperCase(),seat_type:["standard","sofa","sleeper_berth"].includes(s.seat_type)?s.seat_type:"standard",row:Number(s.row)||1,col:Number(s.col)||1})):null;
+ return {layout,cabin_width:Number.isFinite(width)?Math.max(2.1,Math.min(2.7,width)):2.45,row_spacing:Number.isFinite(spacing)?Math.max(.6,Math.min(1.05,spacing)):.74,interior_color:color(raw.interior_color,"#e5eef0"),seat_color:color(raw.seat_color,"#2e6474"),...(seats?{seats}:{})};
 }
 export default async function(req,res) {
  const op=await owner(String(req.user.id));
@@ -42,6 +43,8 @@ export default async function(req,res) {
  }
  if(name.length<2||reg.length<3||!Number.isInteger(capacity)||capacity<4||capacity>80)return res.status(400).json({error:"Enter a bus name, registration number and capacity between 4 and 80."});
  if(capacity!==Number(current.capacity)){
+  // Capacity changes are allowed only before any schedule exists; discard old seat coordinates.
+  delete layoutConfig.seats;
   try{
    await db.transaction([
     {sql:"UPDATE buses SET name=$1,registration_no=$2,bus_type=$3,capacity=$4,amenities=$7,seat_layout_config=$8 WHERE id=$5 AND operator_id=$6 AND NOT EXISTS (SELECT 1 FROM schedules WHERE bus_id=$5) RETURNING id",params:[name,reg,type,capacity,id,op.id,amenities,layoutConfig]},
