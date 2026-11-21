@@ -1,0 +1,44 @@
+/* YATRIO V70 — destination discovery, responsive filters and lightweight 3D scenes */
+.destination-tools{display:grid;grid-template-columns:minmax(220px,1fr) 190px auto;gap:12px;align-items:center;margin:24px 0 14px}
+.destination-search{display:flex;align-items:center;gap:10px;min-width:0;padding:0 15px;height:48px;border:1px solid #dfe9ec;border-radius:13px;background:#fff;box-shadow:0 8px 24px #102a4308}
+.destination-search span{font-size:24px;color:#168779;line-height:1}
+.destination-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;font:500 13px "DM Sans",sans-serif;color:#102a43}
+.destination-search input:focus{box-shadow:none}
+.destination-region{display:flex;align-items:center;gap:9px;height:48px;padding:0 12px;border:1px solid #dfe9ec;border-radius:13px;background:#fff}
+.destination-region span{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#718391}
+.destination-region select{width:100%;border:0;outline:0;background:transparent;color:#102a43;font:700 12px "DM Sans",sans-serif}
+.destination-count{font-size:11px;font-weight:800;color:#168779;text-align:right;white-space:nowrap}
+.destination-chips{display:flex;gap:8px;overflow:auto;padding:2px 1px 14px;scrollbar-width:thin}
+.destination-chip{flex:0 0 auto;border:1px solid #dfe9ec;border-radius:30px;padding:9px 13px;background:#fff;color:#526b77;font:700 11px "DM Sans",sans-serif;cursor:pointer;transition:all .22s ease}
+.destination-chip:hover,.destination-chip.active{background:#102a43;border-color:#102a43;color:#fff;transform:translateY(-2px);box-shadow:0 8px 18px #102a4322}
+.yatrio-travel .destinations{grid-template-columns:repeat(4,minmax(0,1fr));gap:17px;perspective:1400px}
+.yatrio-travel .dest{position:relative;border-radius:18px;overflow:hidden;transform-style:preserve-3d;backface-visibility:hidden;box-shadow:0 12px 28px #102a4310;transition:transform .48s cubic-bezier(.2,.75,.25,1),box-shadow .48s ease,border-color .3s ease}
+.yatrio-travel .dest:hover{transform:perspective(1000px) rotateX(3deg) rotateY(-3deg) translateY(-9px) scale(1.015);box-shadow:0 28px 54px #102a432b}
+.yatrio-travel .destart{position:relative;isolation:isolate;overflow:hidden;background:#d9eae8}
+.yatrio-travel .destart.scene-mountain{background:linear-gradient(145deg,#b7d8d4 0%,#75a9a5 50%,#285d6c 100%)}
+.yatrio-travel .destart.scene-heritage{background:linear-gradient(145deg,#f3dfc0 0%,#d5b48d 52%,#986c50 100%)}
+.yatrio-travel .destart.scene-nature{background:linear-gradient(145deg,#d9ead3 0%,#82b68b 52%,#2d6a61 100%)}
+.yatrio-travel .destart.scene-city{background:linear-gradient(145deg,#d5e6ef 0%,#91b8c5 50%,#356c80 100%)}
+.yatrio-travel .destart:not(.photo-dest):before{content:"";position:absolute;z-index:0;left:-12%;right:-12%;bottom:-10px;height:62%;background:linear-gradient(145deg,#e8f3e8,#72a99d 70%);clip-path:polygon(0 80%,18% 32%,30% 64%,47% 8%,65% 63%,79% 28%,100% 78%,100% 100%,0 100%);transform:translateZ(20px);filter:drop-shadow(0 -9px 13px #123c4c33);animation:destinationRidge 8s ease-in-out infinite alternate}
+.yatrio-travel .destart.scene-heritage:not(.photo-dest):before{height:45%;background:linear-gradient(145deg,#f8e7c8,#b27d57);clip-path:polygon(0 75%,16% 75%,16% 36%,25% 36%,25% 12%,31% 12%,31% 36%,42% 36%,42% 60%,55% 60%,55% 25%,64% 25%,64% 60%,78% 60%,78% 42%,88% 42%,88% 75%,100% 75%,100% 100%,0 100%)}
+.yatrio-travel .destart:not(.photo-dest):after{content:"";position:absolute;z-index:0;width:54px;height:54px;right:24px;top:32px;border-radius:50%;background:linear-gradient(145deg,#fff4c9,#f1b84c);box-shadow:0 0 35px #ffe8a788;animation:destinationSun 5s ease-in-out infinite}
+.yatrio-travel .destart.photo-dest:before{transform:scale(1.04);transition:transform .8s ease}
+.yatrio-travel .dest:hover .destart.photo-dest:before{transform:scale(1.12)}
+.yatrio-travel .destart .scenic-label,.yatrio-travel .destart .dest-photo-caption,.yatrio-travel .destart .dest-orbit{z-index:3}
+.yatrio-travel .destart .dest-orbit{position:absolute;right:16px;bottom:17px;width:30px;height:30px;display:grid;place-items:center;border:1px solid #ffffff75;border-radius:50%;background:#ffffff2b;color:#fff;font-size:15px;backdrop-filter:blur(8px);animation:destinationOrbit 7s linear infinite}
+.yatrio-travel .destbody{position:relative;padding:17px 16px 15px;background:linear-gradient(180deg,#fff,#fbfdfd);transform:translateZ(18px)}
+.yatrio-travel .destbody h3{font-size:16px;letter-spacing:-.3px}
+.yatrio-travel .destbody p{min-height:36px}
+.destination-plan-link{display:flex;justify-content:space-between;align-items:center;margin-top:15px;padding-top:12px;border-top:1px solid #edf1f2;color:#148779;font-size:11px;font-weight:800}
+.destination-plan-link span{width:25px;height:25px;display:grid;place-items:center;border-radius:50%;background:#e8f7f4;font-size:15px;transition:transform .25s ease}
+.destination-plan-link:hover span{transform:translate(3px,-3px)}
+.destination-empty{margin-top:10px;padding:30px;text-align:center;border:1px dashed #cbd8df;border-radius:16px;color:#718096;background:#fff}
+.yatrio-travel .dest[data-yatrio-reveal]{opacity:0;transform:translateY(18px) scale(.985);animation:destinationCardIn .65s both;animation-delay:var(--yr-delay,0ms)}
+@keyframes destinationCardIn{to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes destinationRidge{from{transform:translate3d(-2px,0,18px)}to{transform:translate3d(3px,-6px,24px)}}
+@keyframes destinationSun{0%,100%{transform:translateY(0);box-shadow:0 0 28px #ffe8a766}50%{transform:translateY(-7px);box-shadow:0 0 45px #ffe8a7aa}}
+@keyframes destinationOrbit{to{transform:rotate(360deg)}}
+@media(max-width:1050px){.yatrio-travel .destinations{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:780px){.destination-tools{grid-template-columns:1fr 170px}.destination-count{grid-column:1/-1;text-align:left}.yatrio-travel .destinations{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.destination-tools{grid-template-columns:1fr}.destination-region{width:100%}.destination-count{grid-column:auto}.yatrio-travel .destinations{gap:11px}.yatrio-travel .dest{border-radius:14px}.yatrio-travel .destart{height:170px}.yatrio-travel .destbody{padding:13px 12px}.yatrio-travel .destbody h3{font-size:14px}.yatrio-travel .destbody p{font-size:11px;min-height:48px}.yatrio-travel .destart .dest-photo-caption{left:13px;font-size:19px}.yatrio-travel .destart .scenic-label{left:10px;top:10px;font-size:8px}}
+@media(prefers-reduced-motion:reduce){.yatrio-travel .destart:before,.yatrio-travel .destart:after,.yatrio-travel .destart .dest-orbit{animation:none!important}.yatrio-travel .dest[data-yatrio-reveal]{opacity:1;transform:none;animation:none}}

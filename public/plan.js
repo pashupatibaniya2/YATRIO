@@ -43,6 +43,43 @@ const extensions = {
   Ilam:[["Tea country extension","Visit another tea-growing area with permission from local hosts.","Highland scenery"],["Nearby viewpoint","Choose a nearby viewpoint after checking weather and road access.","Scenic extension"],["Local produce and crafts","Spend time with local producers and small businesses where visitor access is welcomed.","Community focus"],["Buffer and departure","Allow extra time for hill roads and your onward journey.","Travel buffer"]],
   Kathmandu:[["Neighbourhood day","Choose a neighbourhood and explore its food, craft and everyday life slowly.","Local discovery"],["Valley excursion","Add a nearby heritage or nature excursion after checking current access and transport.","Flexible excursion"],["Food and craft","Explore local food traditions and craft markets with time to browse.","Local discovery"],["Buffer and departure","Keep a buffer for city traffic and onward travel.","Travel buffer"]]
 };
+const destinationProfiles={
+  "Bhaktapur":{region:"Bagmati Province",image:"",intro:"A heritage city of brick lanes, pagoda temples, courtyards and traditional craft." ,highlights:["Durbar Square","Nyatapola Temple","Pottery Square"]},
+  "Lalitpur (Patan)":{region:"Bagmati Province",image:"",intro:"Discover Patan's celebrated architecture, courtyards, metalwork and living Newari culture.",highlights:["Patan Durbar Square","Golden Temple","Traditional crafts"]},
+  "Nagarkot":{region:"Bagmati Province",image:"",intro:"A peaceful hill escape known for Himalayan viewpoints, sunrise possibilities and short walks.",highlights:["Sunrise viewpoints","Hill walks","Mountain scenery"]},
+  "Bandipur":{region:"Gandaki Province",image:"",intro:"Slow down in a preserved hilltop bazaar with traditional architecture and wide mountain views.",highlights:["Old bazaar","Mountain panoramas","Local culture"]},
+  "Gorkha":{region:"Gandaki Province",image:"",intro:"Explore Nepal's historic hill country, heritage landmarks and surrounding landscapes.",highlights:["Gorkha Durbar","Local heritage","Hill scenery"]},
+  "Jomsom":{region:"Gandaki Province",image:"",intro:"A high Himalayan gateway to the Kali Gandaki valley and Mustang landscapes.",highlights:["Kali Gandaki","Mountain views","Mustang gateway"]},
+  "Mustang":{region:"Gandaki Province",image:"",intro:"Discover dramatic trans-Himalayan scenery, ancient settlements and distinctive local heritage.",highlights:["Lo Manthang region","High-altitude landscapes","Monasteries"]},
+  "Manang":{region:"Gandaki Province",image:"",intro:"A Himalayan settlement surrounded by high peaks and trekking trails in the Annapurna region.",highlights:["Annapurna Circuit","Mountain trails","Highland culture"]},
+  "Lukla":{region:"Koshi Province",image:"",intro:"A mountain gateway for journeys into the Everest region; flights and trails are weather dependent.",highlights:["Everest gateway","Mountain flights","Trekking routes"]},
+  "Everest Region":{region:"Koshi Province",image:"",intro:"Plan carefully for high-altitude trails, Sherpa communities and spectacular Himalayan landscapes.",highlights:["Sagarmatha region","Sherpa culture","High-altitude trekking"]},
+  "Rara Lake":{region:"Karnali Province",image:"",intro:"A remote alpine lake experience surrounded by forests, quiet trails and mountain wilderness.",highlights:["Rara National Park","Alpine lake","Nature trails"]},
+  "Bardiya":{region:"Lumbini Province",image:"",intro:"Explore western Terai nature and community-led conservation experiences with local guidance.",highlights:["Bardiya National Park","Wildlife conservation","Tharu culture"]},
+  "Koshi Tappu":{region:"Koshi Province",image:"",intro:"A wetland landscape known for birdlife, river habitats and conservation-focused visits.",highlights:["Birdwatching","Wetlands","Wildlife conservation"]},
+  "Janakpur":{region:"Madhesh Province",image:"/images/janakpur.jpg",intro:"Experience Mithila art, sacred heritage and the distinctive cultural life of the eastern Terai.",highlights:["Janaki Mandir","Mithila culture","Heritage walks"]},
+  "Dharan":{region:"Koshi Province",image:"/images/dharan.jpg",intro:"A lively eastern city and a convenient base for local food, viewpoints and nearby hill escapes.",highlights:["Local food","Bhedetar gateway","Eastern Nepal"]},
+  "Biratnagar":{region:"Koshi Province",image:"/images/biratnagar.jpg",intro:"Explore a major eastern Nepal hub, local markets and nearby cultural and nature destinations.",highlights:["Eastern gateway","Local markets","Regional connections"]},
+  "Butwal":{region:"Lumbini Province",image:"",intro:"A growing gateway city linking the western Terai with hill towns and heritage destinations.",highlights:["Siddharthanagar gateway","Local markets","Western connections"]},
+  "Hetauda":{region:"Bagmati Province",image:"",intro:"A relaxed central Nepal city connecting the Terai, forested foothills and nearby heritage routes.",highlights:["Makwanpur","Central Nepal","Foothill scenery"]},
+  "Tansen":{region:"Lumbini Province",image:"",intro:"A historic hill town with old bazaars, traditional crafts and scenic views across Palpa.",highlights:["Rani Mahal","Old bazaar","Palpa culture"]},
+  "Nepalgunj":{region:"Lumbini Province",image:"",intro:"A western Nepal travel hub and starting point for journeys into remote mountain regions.",highlights:["Bageshwori Temple","Local markets","Western gateway"]},
+  "Dhangadhi":{region:"Sudurpashchim Province",image:"",intro:"Discover far-western Nepal's urban life, regional food and gateways to protected landscapes.",highlights:["Far-west culture","Local food","Shuklaphanta gateway"]},
+  "Bhedetar":{region:"Koshi Province",image:"",intro:"A cool eastern hill station with viewpoints, fresh air and easy access to local food stops.",highlights:["Viewpoints","Mountain air","Local food"]}
+};
+const genericExtensions={};
+for(const [name,profile] of Object.entries(destinationProfiles)){
+  const h=profile.highlights;
+  const intro=profile.intro;
+  plans[name]={
+    image:profile.image,region:profile.region,intro,
+    balanced:[[ "Arrive and get oriented","Arrive in "+name+", settle in and explore a nearby neighbourhood or viewpoint at an easy pace.","Arrival day"],["Explore the highlights","Choose from "+h[0]+", "+h[1]+" and other locally recommended stops. Check access and opening information before setting out.","Main discovery day"],["Local flavour and onward travel","Enjoy "+h[2]+", try regional food and leave a comfortable buffer for your onward journey.","Flexible finish"]],
+    nature:[["A gentle arrival","Settle in and enjoy the surrounding landscape with a short walk suited to the weather and your ability.","Easy start"],["Nature and scenery","Explore local outdoor highlights such as "+h[1]+" with local guidance; check trail, road and weather conditions.","Outdoor day"],["Slow scenic morning","Choose a quiet viewpoint or nature stop around "+h[2]+" before departure.","Nature finish"]],
+    culture:[["Local orientation","Get to know "+name+" through its neighbourhoods, food and everyday life.","Local introduction"],["Heritage and community","Explore "+h[0]+" and "+h[1]+" respectfully, ideally with a knowledgeable local guide.","Culture day"],["Craft, food and stories","Spend time learning about local traditions and regional food before travelling onward.","Heritage finish"]],
+    relaxed:[["Arrive and unwind","Check in, rest and enjoy an unhurried first look at "+name+".","Low effort"],["A slow day in "+name,"Choose one or two favourite stops from "+h.join(", ")+" and leave plenty of time for rest.","Slow pace"],["Flexible departure morning","Enjoy a relaxed breakfast and allow extra time for road, weather or flight conditions.","Easy finish"]]
+  };
+  genericExtensions[name]=[["Explore beyond the centre","Ask a local host about a nearby viewpoint, community experience or short walk that suits current conditions.","Local discovery"],["A flexible extra day","Choose an additional highlight from "+h.join(", ")+", or keep the day free for rest.","Optional day"],["Food and neighbourhoods","Try regional dishes and spend time with local businesses and communities.","Local flavour"],["Buffer and departure","Keep a buffer for changing road, weather and transport conditions before your onward journey.","Travel buffer"]];
+}
 const form = document.getElementById("plannerForm");
 const destination = document.getElementById("destination");
 const requestedDestination = new URLSearchParams(location.search).get("destination");
@@ -55,16 +92,17 @@ function renderPlan(shouldScroll){
   const data=plans[dest];
   const items=data[style];
   const selected=[];
-  for(let i=0;i<days;i++) selected.push(i<items.length?items[i]:extensions[dest][(i-items.length)%extensions[dest].length]);
+  const extraDays=extensions[dest]||genericExtensions[dest]||[];
+  for(let i=0;i<days;i++) selected.push(i<items.length?items[i]:extraDays[(i-items.length)%extraDays.length]);
   const label=style==="nature"?"Nature & outdoors":style==="culture"?"Culture & heritage":style==="relaxed"?"Slow & relaxed":"A little of everything";
   const photo=data.image ? "background-image:linear-gradient(90deg,#102a4310,#102a4366),url('"+data.image+"')" : "background-image:linear-gradient(135deg,#174b63,#18a999)";
   const daysHtml=selected.map((item,i)=>'<article class="day" style="animation-delay:'+(i*.06)+'s"><div class="day-number">D'+(i+1)+'</div><div><h3>'+esc(item[0])+'</h3><p>'+esc(item[1])+'</p><small>'+esc(item[2])+'</small></div></article>').join("");
   const busOrigin=origin==="Chitwan"?"Sauraha":origin;
   const busDest=dest==="Chitwan"?"Sauraha":dest==="Kathmandu"?"Kathmandu":dest;
   const supportedBusDest=["Sauraha","Pokhara","Kathmandu","Butwal","Biratnagar","Dharan"];
-  const hasDirectRoute=supportedBusDest.includes(busDest);
+  const hasDirectRoute=busOrigin==="Kathmandu"&&supportedBusDest.includes(busDest)&&busDest!=="Kathmandu";
   const busUrl=hasDirectRoute?"/?from="+encodeURIComponent(busOrigin)+"&to="+encodeURIComponent(busDest):"/";
-  const busLabel=hasDirectRoute?"Explore bus journeys →":"Open bus search →";
+  const busLabel=hasDirectRoute?"Check Kathmandu bus search →":"Browse bus search (availability varies) →";
   const serviceUrl="/explore.html?city="+encodeURIComponent(dest==="Chitwan"?"Sauraha":dest);
   document.getElementById("tripResult").innerHTML='<div class="sectionhead"><div><h2>Your suggested itinerary</h2><p>Use this as a flexible starting point and adapt it to your dates.</p></div><span class="step">'+days+' DAYS · '+esc(label.toUpperCase())+'</span></div><div class="trip-summary"><div class="summary-photo" role="img" aria-label="'+esc(dest)+' landscape" style="'+photo+'"></div><div class="summary-copy"><div class="eyebrow">'+esc(data.region)+' · NEPAL</div><h3>'+esc(dest==="Kathmandu"?"Kathmandu Valley":dest)+'</h3><p>'+esc(data.intro)+'</p><div class="summary-meta"><span class="meta-pill">Starting from '+esc(origin)+'</span><span class="meta-pill">'+days+' day outline</span><span class="meta-pill">'+esc(label)+'</span></div></div></div><div class="days">'+daysHtml+'</div><div class="actions"><a class="action primary" href="'+busUrl+'">'+busLabel+'</a><a class="action secondary" href="'+serviceUrl+'">Browse local travel services →</a></div>';
   if(shouldScroll) document.getElementById("tripResult").scrollIntoView({behavior:"smooth",block:"start"});
