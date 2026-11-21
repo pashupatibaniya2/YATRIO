@@ -62,6 +62,26 @@ write = "own"
 read = "own"
 write = "own"
 
+[db.tables.communication_thread_members]
+read = "own"
+write = "own"
+
+[db.tables.communication_messages]
+read = "own"
+write = "own"
+
+[db.tables.support_tickets]
+read = "own"
+write = "own"
+
+[db.tables.support_ticket_messages]
+read = "own"
+write = "own"
+
+[db.tables.booking_timeline]
+read = "own"
+write = "own"
+
 [db.tables.shared_trip_views]
 read = "public"
 write = "own"
