@@ -50,6 +50,10 @@ write = "own"
 read = "own"
 write = "own"
 
+[db.tables.saved_trips]
+read = "own"
+write = "own"
+
 [[cron]]
 path = "/api/expire-seat-holds"
 schedule = "0 * * * *"

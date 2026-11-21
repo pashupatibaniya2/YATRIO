@@ -127,7 +127,7 @@ function renderPlan(shouldScroll){
   const photo=data.image ? "background-image:linear-gradient(90deg,#102a4310,#102a4366),url('"+data.image+"')" : "background-image:linear-gradient(135deg,#174b63,#18a999)";
   const daysHtml=selected.map((item,i)=>'<article class="day" style="animation-delay:'+(i*.06)+'s"><div class="day-number">D'+(i+1)+'</div><div><h3>'+esc(item[0])+'</h3><p>'+esc(item[1])+'</p><small>'+esc(item[2])+'</small></div></article>').join("");
   const nearby=nearbyAttractions[dest]||[];
-  const nearbyHtml=nearby.map((p,i)=>'<article class="nearby-item"><span class="day-number" style="width:30px;height:30px;font-size:11px">'+(i+1)+'</span><div><b>'+esc(p[0])+'</b><small>'+esc(p[1])+'</small></div></article>').join("");
+  const nearbyHtml=nearby.map((p,i)=>'<article class="nearby-item"><span class="day-number" style="width:30px;height:30px;font-size:11px">'+(i+1)+'</span><div style="flex:1"><b>'+esc(p[0])+'</b><small>'+esc(p[1])+'</small></div><button type="button" class="wish-btn" data-place="'+esc(p[0])+'">＋ Wishlist</button></article>').join("");
   const busOrigin=origin==="Chitwan"?"Sauraha":origin;
   const busDest=dest==="Chitwan"?"Sauraha":dest==="Kathmandu"?"Kathmandu":dest;
   const supportedBusDest=["Sauraha","Pokhara","Kathmandu","Butwal","Biratnagar","Dharan"];
@@ -137,10 +137,14 @@ function renderPlan(shouldScroll){
   const serviceUrl="/explore.html?city="+encodeURIComponent(dest==="Chitwan"?"Sauraha":dest);
   document.getElementById("tripResult").innerHTML='<div class="sectionhead"><div><h2>Your suggested itinerary</h2><p>Use this as a flexible starting point and adapt it to your dates.</p></div><span class="step">'+days+' DAYS · '+esc(label.toUpperCase())+'</span></div><div class="trip-summary"><div class="summary-photo" role="img" aria-label="'+esc(dest)+' landscape" style="'+photo+'"></div><div class="summary-copy"><div class="eyebrow">'+esc(data.region)+' · NEPAL</div><h3>'+esc(dest==="Kathmandu"?"Kathmandu Valley":dest)+'</h3><p>'+esc(data.intro)+'</p><div class="summary-meta"><span class="meta-pill">Starting from '+esc(origin)+'</span><span class="meta-pill">'+days+' day outline</span><span class="meta-pill">'+esc(label)+'</span></div></div></div><div class="days">'+daysHtml+'</div><div class="actions"><a class="action primary" href="'+busUrl+'">'+busLabel+'</a><a class="action secondary" href="'+serviceUrl+'">Browse local travel services →</a></div>';
   const resultRoot=document.getElementById("tripResult");
+  resultRoot.querySelector(".actions").insertAdjacentHTML("beforeend",`<button type="button" class="action secondary" id="saveTripBtn">Save this trip</button><button type="button" class="action secondary" id="shareTripBtn" disabled>Share trip link</button><button type="button" class="action secondary" id="printTripBtn">Export / Print PDF</button><a class="action secondary" href="/saved-trips.html">My saved trips</a>`);
   resultRoot.querySelector(".days").insertAdjacentHTML("afterend",'<div class="connection-grid"><section class="connection-panel"><div class="connection-kicker">Explore around your destination</div><h3>Famous places nearby</h3><p>Suggested attractions to help shape each day. Check distances and opening hours locally.</p><div class="nearby-grid">'+(nearbyHtml||'<div class="inventory-empty">Ask a local host for nearby highlights.</div>')+'</div></section><section class="connection-panel"><div class="connection-kicker">Stay & transport</div><h3>Hotels and stays</h3><p>Published partner stays with upcoming availability, when listed.</p><div class="inventory-list" id="planStays"><div class="inventory-empty">Checking partner stays…</div></div><div style="margin-top:12px"><h3>Bus options</h3><p>Upcoming schedules for your selected starting city and destination.</p><div class="inventory-list" id="planBuses"><div class="inventory-empty">Checking bus schedules…</div></div></div></section></div>');
   const budgetMarkup='<section class="budget-panel" id="tripBudget"><div class="budget-head"><div><h3>Estimate your trip budget</h3><p>Adjust these planning assumptions to match your group and comfort level.</p></div><span class="budget-tag">LIVE ESTIMATE · NPR</span></div><div class="budget-fields"><div class="budget-field"><label for="budgetPeople">Travellers</label><input id="budgetPeople" type="number" min="1" max="30" step="1" value="2"></div><div class="budget-field"><label for="budgetNights">Hotel nights</label><input id="budgetNights" type="number" min="1" max="30" step="1" value="'+Math.max(1,days-1)+'"></div><div class="budget-field"><label for="budgetBus">Return bus / person</label><input id="budgetBus" type="number" min="0" max="100000" step="100" value="3000"></div><div class="budget-field"><label for="budgetHotel">Hotel / room / night</label><input id="budgetHotel" type="number" min="0" max="100000" step="100" value="3000"></div><div class="budget-field"><label for="budgetFood">Meals / person / day</label><input id="budgetFood" type="number" min="0" max="50000" step="50" value="1200"></div><div class="budget-field"><label for="budgetLocal">Local transport / person / day</label><input id="budgetLocal" type="number" min="0" max="50000" step="50" value="700"></div><div class="budget-field"><label for="budgetActivities">Activities / person</label><input id="budgetActivities" type="number" min="0" max="100000" step="100" value="1000"></div></div><div class="budget-total"><div><small>Estimated group total</small><strong id="budgetGrand">NPR 0</strong></div><div><small>Estimated per person</small><strong id="budgetPerPerson">NPR 0</strong></div><div class="grand"><small>Hotel rooms needed</small><strong id="budgetRooms">1 room</strong></div></div><p class="budget-note">Estimate only: bus fares, hotel rates, room occupancy, meals, local transfers, entry fees and activity costs are editable assumptions, not supplier quotes or confirmed availability. Hotel rooms are estimated at two travellers per room. Add contingency for permits, flights, guides and seasonal surcharges.</p><div class="budget-actions"><button type="button" id="budgetReset">Reset estimate</button><button type="button" id="budgetCopy">Copy budget summary</button></div></section>';
   resultRoot.insertAdjacentHTML("beforeend",budgetMarkup);
+  resultRoot.insertAdjacentHTML("beforeend",`<section class="budget-panel" id="actualSpendPanel"><div class="budget-head"><div><h3>Track actual spending</h3><p>Record what you really spend and compare it with your estimate.</p></div><span class="budget-tag">SPENDING TRACKER</span></div><div class="budget-fields"><div class="budget-field"><label for="actualBus">Actual bus (NPR)</label><input id="actualBus" type="number" min="0" value="0"></div><div class="budget-field"><label for="actualHotel">Actual hotel (NPR)</label><input id="actualHotel" type="number" min="0" value="0"></div><div class="budget-field"><label for="actualFood">Actual meals (NPR)</label><input id="actualFood" type="number" min="0" value="0"></div><div class="budget-field"><label for="actualLocal">Actual local transport (NPR)</label><input id="actualLocal" type="number" min="0" value="0"></div><div class="budget-field"><label for="actualActivities">Actual activities (NPR)</label><input id="actualActivities" type="number" min="0" value="0"></div></div><div class="budget-total"><div><small>Actual spend</small><strong id="actualGrand">NPR 0</strong></div><div><small>Estimated budget</small><strong id="actualEstimate">NPR 0</strong></div><div class="grand"><small>Over / under budget</small><strong id="actualVariance">NPR 0</strong></div></div></section>`);
   setupTripBudget(days);
+  setupTripActions(origin,dest,days,style);
+  setupActualSpend();
   loadTripConnections(busOrigin,busDest,dest);
   if(shouldScroll) document.getElementById("tripResult").scrollIntoView({behavior:"smooth",block:"start"});
 }
@@ -175,6 +179,56 @@ function setupTripBudget(tripDays){
   });
   calculate();
 }
+function setupActualSpend(){
+ const ids=["actualBus","actualHotel","actualFood","actualLocal","actualActivities"];
+ const money=n=>"NPR "+Math.round(n).toLocaleString("en-IN");
+ const update=()=>{const actual=ids.reduce((s,id)=>s+Math.max(0,Number(document.getElementById(id).value)||0),0);const estimate=Number(JSON.parse(document.getElementById("budgetCopy").dataset.summary||"{}").total||0);document.getElementById("actualGrand").textContent=money(actual);document.getElementById("actualEstimate").textContent=money(estimate);document.getElementById("actualVariance").textContent=(actual>estimate?"+":"")+money(actual-estimate);};
+ ids.forEach(id=>document.getElementById(id).addEventListener("input",update));document.getElementById("budgetCopy").addEventListener("click",update);update();
+}
+function setupTripActions(origin,dest,days,style){
+ const root=document.getElementById("tripResult");
+ root.querySelectorAll(".wish-btn").forEach(btn=>btn.addEventListener("click",()=>{btn.classList.toggle("active");btn.textContent=btn.classList.contains("active")?"✓ Added":"＋ Wishlist";}));
+ document.getElementById("printTripBtn").addEventListener("click",()=>window.print());
+ const saveBtn=document.getElementById("saveTripBtn"),shareBtn=document.getElementById("shareTripBtn");
+ saveBtn.addEventListener("click",async()=>{
+  saveBtn.disabled=true;saveBtn.textContent="Saving…";
+  try{
+   const budget=JSON.parse(document.getElementById("budgetCopy").dataset.summary||"{}");
+   const actual={bus:Number(actualBus.value)||0,hotel:Number(actualHotel.value)||0,meals:Number(actualFood.value)||0,localTransport:Number(actualLocal.value)||0,activities:Number(actualActivities.value)||0};
+   const itinerary=[...root.querySelectorAll(".day")].map(x=>({title:x.querySelector("h3")?.textContent||"",description:x.querySelector("p")?.textContent||"",note:x.querySelector("small")?.textContent||""}));
+   const wishlist=[...root.querySelectorAll(".wish-btn.active")].map(x=>x.dataset.place);
+   const title=prompt("Name this trip",dest+" getaway");
+   if(!title){saveBtn.disabled=false;saveBtn.textContent="Save this trip";return;}
+   const payload={title,origin,destination:dest,trip_days:days,travel_style:style,itinerary,budget,wishlist,actual_spend:actual};
+   if(window.yatrioSavedTripId)payload.id=window.yatrioSavedTripId;
+   const r=await fetch("/api/saved-trips",{method:window.yatrioSavedTripId?"PUT":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+   const d=await r.json();if(!r.ok)throw new Error(d.error||"Could not save trip.");
+   window.yatrioSavedTripId=d.trip.id;saveBtn.textContent="Saved ✓";shareBtn.disabled=false;
+  }catch(e){alert(e.message);saveBtn.textContent="Save this trip";}finally{saveBtn.disabled=false;}
+ });
+ shareBtn.addEventListener("click",async()=>{
+  if(!window.yatrioSavedTripId){alert("Save this trip first.");return;}
+  const r=await fetch("/api/saved-trips-share",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:window.yatrioSavedTripId})});
+  const d=await r.json();if(!r.ok){alert(d.error||"Could not create share link.");return;}
+  try{await navigator.clipboard.writeText(d.url);shareBtn.textContent="Link copied ✓";}catch{prompt("Copy your share link",d.url);}
+ });
+}
+async function loadSavedTrip(){
+ const id=new URLSearchParams(location.search).get("trip");if(!id)return;
+ try{
+  const r=await fetch("/api/saved-trips?id="+encodeURIComponent(id));const d=await r.json();if(!r.ok)throw new Error(d.error||"Could not load saved trip.");
+  const t=d.trip;window.yatrioSavedTripId=t.id;
+  document.getElementById("origin").value=t.origin;document.getElementById("destination").value=t.destination;document.getElementById("days").value=String(Math.min(7,t.trip_days));document.getElementById("style").value=t.travel_style;
+  renderPlan(false);
+  const b=t.budget||{};const values={budgetPeople:b.travellers,budgetNights:b.nights,budgetBus:b.travellers?b.returnBus/b.travellers:undefined,budgetHotel:b.rooms&&b.nights?b.hotel/(b.rooms*b.nights):undefined,budgetFood:b.travellers&&b.nights!==undefined?b.meals/(b.travellers*(b.nights+1)):undefined,budgetLocal:b.travellers&&b.nights!==undefined?b.localTransport/(b.travellers*(b.nights+1)):undefined,budgetActivities:b.travellers?b.activities/b.travellers:undefined};
+  Object.entries(values).forEach(([k,v])=>{if(v!==undefined&&Number.isFinite(Number(v)))document.getElementById(k).value=String(v);});
+  document.getElementById("budgetPeople").dispatchEvent(new Event("input"));
+  const actual=t.actual_spend||{};Object.entries({actualBus:actual.bus,actualHotel:actual.hotel,actualFood:actual.meals,actualLocal:actual.localTransport,actualActivities:actual.activities}).forEach(([k,v])=>{if(v!==undefined)document.getElementById(k).value=v;});
+  document.querySelectorAll(".wish-btn").forEach(btn=>{if((t.wishlist||[]).includes(btn.dataset.place)){btn.classList.add("active");btn.textContent="✓ Added";}});
+  document.getElementById("saveTripBtn").textContent="Update saved trip";document.getElementById("shareTripBtn").disabled=false;
+ }catch(e){console.warn("Saved trip could not be loaded",e);alert(e.message);}
+}
+
 async function loadTripConnections(origin,destinationName,displayDestination){
   const stayRoot=document.getElementById("planStays"),busRoot=document.getElementById("planBuses");
   const city=displayDestination==="Chitwan"?"Sauraha":displayDestination==="Lalitpur (Patan)"?"Lalitpur":displayDestination==="Everest Region"?"Lukla":displayDestination;
@@ -195,3 +249,4 @@ async function loadTripConnections(origin,destinationName,displayDestination){
 form.addEventListener("submit",e=>{e.preventDefault();renderPlan(true)});
 destination.addEventListener("change",()=>{if(document.getElementById("tripResult").querySelector(".days"))renderPlan(false)});
 renderPlan();
+loadSavedTrip();
