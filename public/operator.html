@@ -72,7 +72,8 @@ function renumberDesignerSeats(){if(!seatDesignerEditable)return;seatDesignerDra
 async function saveSeatDesigner(){
  if(!seatDesignerEditable||!seatDesignerBus)return;
  if(seatDesignerDraft.length!==seatDesignerCapacity){msg('Your map has '+seatDesignerDraft.length+' seats; bus capacity is '+seatDesignerCapacity+'. Add or remove seats to match exactly.','err');return}
- if(seatDesignerDraft.some(s=>(Number(s.deck)||1)>seatDesignerDeckCount)){msg('A seat is assigned to a deck that is not enabled.','err');return}\n const names=seatDesignerDraft.map(s=>String(s.seat_number||'').trim().toUpperCase());if(names.some(x=>!x)||new Set(names).size!==names.length){msg('Seat numbers must be filled in and unique.','err');return}
+ if(seatDesignerDraft.some(s=>(Number(s.deck)||1)>seatDesignerDeckCount)){msg('A seat is assigned to a deck that is not enabled.','err');return}
+ const names=seatDesignerDraft.map(s=>String(s.seat_number||'').trim().toUpperCase());if(names.some(x=>!x)||new Set(names).size!==names.length){msg('Seat numbers must be filled in and unique.','err');return}
  const btn=document.getElementById('saveSeatDesigner');btn.disabled=true;btn.textContent='Saving…';
  try{const d=await api('operator-seat-layout',{method:'PUT',body:JSON.stringify({bus_id:seatDesignerBus,seats:seatDesignerDraft})});msg(d.message,'ok');await loadSeatDesigner(seatDesignerBus);await load()}catch(e){msg(e.message,'err')}finally{btn.textContent='Save visual seat map';btn.disabled=!seatDesignerEditable}
 }
