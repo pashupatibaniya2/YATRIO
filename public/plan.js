@@ -138,8 +138,42 @@ function renderPlan(shouldScroll){
   document.getElementById("tripResult").innerHTML='<div class="sectionhead"><div><h2>Your suggested itinerary</h2><p>Use this as a flexible starting point and adapt it to your dates.</p></div><span class="step">'+days+' DAYS · '+esc(label.toUpperCase())+'</span></div><div class="trip-summary"><div class="summary-photo" role="img" aria-label="'+esc(dest)+' landscape" style="'+photo+'"></div><div class="summary-copy"><div class="eyebrow">'+esc(data.region)+' · NEPAL</div><h3>'+esc(dest==="Kathmandu"?"Kathmandu Valley":dest)+'</h3><p>'+esc(data.intro)+'</p><div class="summary-meta"><span class="meta-pill">Starting from '+esc(origin)+'</span><span class="meta-pill">'+days+' day outline</span><span class="meta-pill">'+esc(label)+'</span></div></div></div><div class="days">'+daysHtml+'</div><div class="actions"><a class="action primary" href="'+busUrl+'">'+busLabel+'</a><a class="action secondary" href="'+serviceUrl+'">Browse local travel services →</a></div>';
   const resultRoot=document.getElementById("tripResult");
   resultRoot.querySelector(".days").insertAdjacentHTML("afterend",'<div class="connection-grid"><section class="connection-panel"><div class="connection-kicker">Explore around your destination</div><h3>Famous places nearby</h3><p>Suggested attractions to help shape each day. Check distances and opening hours locally.</p><div class="nearby-grid">'+(nearbyHtml||'<div class="inventory-empty">Ask a local host for nearby highlights.</div>')+'</div></section><section class="connection-panel"><div class="connection-kicker">Stay & transport</div><h3>Hotels and stays</h3><p>Published partner stays with upcoming availability, when listed.</p><div class="inventory-list" id="planStays"><div class="inventory-empty">Checking partner stays…</div></div><div style="margin-top:12px"><h3>Bus options</h3><p>Upcoming schedules for your selected starting city and destination.</p><div class="inventory-list" id="planBuses"><div class="inventory-empty">Checking bus schedules…</div></div></div></section></div>');
+  const budgetMarkup='<section class="budget-panel" id="tripBudget"><div class="budget-head"><div><h3>Estimate your trip budget</h3><p>Adjust these planning assumptions to match your group and comfort level.</p></div><span class="budget-tag">LIVE ESTIMATE · NPR</span></div><div class="budget-fields"><div class="budget-field"><label for="budgetPeople">Travellers</label><input id="budgetPeople" type="number" min="1" max="30" step="1" value="2"></div><div class="budget-field"><label for="budgetNights">Hotel nights</label><input id="budgetNights" type="number" min="1" max="30" step="1" value="'+Math.max(1,days-1)+'"></div><div class="budget-field"><label for="budgetBus">Return bus / person</label><input id="budgetBus" type="number" min="0" max="100000" step="100" value="3000"></div><div class="budget-field"><label for="budgetHotel">Hotel / room / night</label><input id="budgetHotel" type="number" min="0" max="100000" step="100" value="3000"></div><div class="budget-field"><label for="budgetFood">Meals / person / day</label><input id="budgetFood" type="number" min="0" max="50000" step="50" value="1200"></div><div class="budget-field"><label for="budgetLocal">Local transport / person / day</label><input id="budgetLocal" type="number" min="0" max="50000" step="50" value="700"></div><div class="budget-field"><label for="budgetActivities">Activities / person</label><input id="budgetActivities" type="number" min="0" max="100000" step="100" value="1000"></div></div><div class="budget-total"><div><small>Estimated group total</small><strong id="budgetGrand">NPR 0</strong></div><div><small>Estimated per person</small><strong id="budgetPerPerson">NPR 0</strong></div><div class="grand"><small>Hotel rooms needed</small><strong id="budgetRooms">1 room</strong></div></div><p class="budget-note">Estimate only: bus fares, hotel rates, room occupancy, meals, local transfers, entry fees and activity costs are editable assumptions, not supplier quotes or confirmed availability. Hotel rooms are estimated at two travellers per room. Add contingency for permits, flights, guides and seasonal surcharges.</p><div class="budget-actions"><button type="button" id="budgetReset">Reset estimate</button><button type="button" id="budgetCopy">Copy budget summary</button></div></section>';
+  resultRoot.insertAdjacentHTML("beforeend",budgetMarkup);
+  setupTripBudget(days);
   loadTripConnections(busOrigin,busDest,dest);
   if(shouldScroll) document.getElementById("tripResult").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function setupTripBudget(tripDays){
+  const ids=["budgetPeople","budgetNights","budgetBus","budgetHotel","budgetFood","budgetLocal","budgetActivities"];
+  const defaults={budgetPeople:2,budgetNights:Math.max(1,tripDays-1),budgetBus:3000,budgetHotel:3000,budgetFood:1200,budgetLocal:700,budgetActivities:1000};
+  const number=id=>Math.max(0,Number(document.getElementById(id)?.value)||0);
+  const money=value=>"NPR "+Math.round(value).toLocaleString("en-IN");
+  const calculate=()=>{
+    const people=Math.max(1,Math.min(30,number("budgetPeople")));
+    const nights=Math.max(1,Math.min(30,number("budgetNights")));
+    const days=nights+1;
+    const rooms=Math.ceil(people/2);
+    const bus=number("budgetBus")*people;
+    const hotel=number("budgetHotel")*rooms*nights;
+    const food=number("budgetFood")*people*days;
+    const local=number("budgetLocal")*people*days;
+    const activities=number("budgetActivities")*people;
+    const total=bus+hotel+food+local+activities;
+    document.getElementById("budgetGrand").textContent=money(total);
+    document.getElementById("budgetPerPerson").textContent=money(total/people);
+    document.getElementById("budgetRooms").textContent=rooms+" "+(rooms===1?"room":"rooms");
+    const summary={destination:document.getElementById("destination").value,travellers:people,nights,rooms,returnBus:bus,hotel,meals:food,localTransport:local,activities,total,perPerson:Math.round(total/people)};
+    document.getElementById("budgetCopy").dataset.summary=JSON.stringify(summary);
+  };
+  ids.forEach(id=>document.getElementById(id).addEventListener("input",calculate));
+  document.getElementById("budgetReset").addEventListener("click",()=>{ids.forEach(id=>document.getElementById(id).value=defaults[id]);calculate();});
+  document.getElementById("budgetCopy").addEventListener("click",async event=>{
+    const s=JSON.parse(event.currentTarget.dataset.summary||"{}");
+    const message="YATRIO trip budget estimate — "+s.destination+"\nTravellers: "+s.travellers+"\nHotel nights: "+s.nights+" · Rooms: "+s.rooms+"\nReturn bus: "+money(s.returnBus)+"\nHotel: "+money(s.hotel)+"\nMeals: "+money(s.meals)+"\nLocal transport: "+money(s.localTransport)+"\nActivities: "+money(s.activities)+"\nEstimated group total: "+money(s.total)+"\nEstimated per person: "+money(s.perPerson)+"\nPlanning estimate only; not supplier quotes.";
+    try{await navigator.clipboard.writeText(message);event.currentTarget.textContent="Copied!";}catch(error){event.currentTarget.textContent="Copy unavailable";} 
+  });
+  calculate();
 }
 async function loadTripConnections(origin,destinationName,displayDestination){
   const stayRoot=document.getElementById("planStays"),busRoot=document.getElementById("planBuses");
