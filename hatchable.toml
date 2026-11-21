@@ -55,6 +55,31 @@ path = "/api/expire-seat-holds"
 schedule = "0 * * * *"
 
 [[secret]]
-name = "KHALTI_SECRET_KEY"
+name = "KHALTI_LIVE_SECRET_KEY"
 required = false
-description = "Khalti sandbox merchant secret key for YATRIO test checkout. Do not use a live key in this sandbox-only release."
+description = "Khalti production live secret key. Keep server-side only."
+
+[[secret]]
+name = "ESEWA_PRODUCT_CODE"
+required = false
+description = "eSewa production merchant product code issued to YATRIO."
+
+[[secret]]
+name = "ESEWA_SECRET_KEY"
+required = false
+description = "eSewa production HMAC-SHA256 signing key. Keep server-side only."
+
+[[secret]]
+name = "FONEPAY_MERCHANT_CODE"
+required = false
+description = "Fonepay merchant code issued to YATRIO after online checkout onboarding."
+
+[[secret]]
+name = "FONEPAY_SECRET_KEY"
+required = false
+description = "Fonepay production signing secret issued to YATRIO."
+
+[[secret]]
+name = "FONEPAY_GATEWAY_URL"
+required = false
+description = "Exact production checkout URL supplied by Fonepay for YATRIO merchant integration."

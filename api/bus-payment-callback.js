@@ -1,68 +1,85 @@
 import { db, config } from "hatchable";
 export const access = "public";
 export const methods = ["GET"];
-const BASE="https://dev.khalti.com/api/v2";
 const SITE="https://yatrio-nepal-bus.hatchable.site";
-
-export default async function(req,res) {
+const KHALTI_URL="https://khalti.com/api/v2";
+const ESEWA_STATUS="https://esewa.com.np/api/epay/transaction/status/";
+const enc=new TextEncoder();
+async function hmacBase64(secret,message){
+  const key=await crypto.subtle.importKey("raw",enc.encode(secret),{name:"HMAC",hash:"SHA-256"},false,["sign"]);
+  const sig=await crypto.subtle.sign("HMAC",key,enc.encode(message));
+  return btoa(String.fromCharCode(...new Uint8Array(sig)));
+}
+function same(a,b){if(typeof a!=="string"||typeof b!=="string"||a.length!==b.length)return false;let n=0;for(let i=0;i<a.length;i++)n|=a.charCodeAt(i)^b.charCodeAt(i);return n===0}
+function go(state,ref){return SITE+"/my-trips.html?payment="+encodeURIComponent(state)+"&ref="+encodeURIComponent(ref||"")}
+async function finish(payment,verification,providerRef){
+  const tx=await db.transaction([
+    {sql:"UPDATE bookings SET status=CASE WHEN hold_expires_at>now() AND (SELECT count(*) FROM seat_inventory WHERE booking_id=$1 AND status='held' AND hold_expires_at>now())=cardinality(seat_numbers) THEN 'confirmed' ELSE 'payment_review' END,payment_mode=$2,hold_expires_at=NULL WHERE id=$1 AND status='awaiting_payment' RETURNING status",params:[payment.booking_id,payment.provider]},
+    {sql:"UPDATE seat_inventory SET status='booked',hold_token=NULL,hold_expires_at=NULL WHERE booking_id=$1 AND status='held' AND EXISTS (SELECT 1 FROM bookings WHERE id=$1 AND status='confirmed')",params:[payment.booking_id]},
+    {sql:"UPDATE payment_transactions SET status='succeeded',provider_payment_id=COALESCE($1,provider_payment_id),failure_reason=NULL,provider_payload=$2::jsonb,verified_at=now(),updated_at=now() WHERE id=$3 AND status<>'succeeded'",params:[providerRef||null,JSON.stringify(verification),payment.id]}
+  ]);
+  return tx.results?.[0]?.rows?.[0]?.status||"payment_review";
+}
+export default async function(req,res){
+  const provider=String(req.query?.provider||"khalti").toLowerCase();
+  if(provider==="esewa"){
+    try{
+      const encoded=String(req.query?.data||"");
+      if(!encoded||encoded.length>12000) return res.redirect(go("invalid",""));
+      const raw=atob(encoded.replace(/-/g,"+").replace(/_/g,"/"));
+      const response=JSON.parse(decodeURIComponent(Array.from(raw,c=>"%"+c.charCodeAt(0).toString(16).padStart(2,"0")).join("")));
+      const uuid=String(response.transaction_uuid||"");
+      const found=await db.query("SELECT id,booking_id,booking_ref,user_id,amount,amount_paisa,purchase_order_id,status,provider FROM payment_transactions WHERE booking_type='bus' AND provider='esewa' AND provider_payment_id=$1 LIMIT 1",[uuid]);
+      if(!found.rows.length) return res.redirect(go("not-found",""));
+      const payment=found.rows[0];
+      if(payment.status==="succeeded") return res.redirect(go("success",payment.booking_ref));
+      const secret=await config.get("ESEWA_SECRET_KEY"),product=await config.get("ESEWA_PRODUCT_CODE");
+      if(!secret||!product) return res.redirect(go("verify-later",payment.booking_ref));
+      if(response.product_code!==product||response.status!=="COMPLETE"||!response.signed_field_names||!response.signature) return res.redirect(go("pending",payment.booking_ref));
+      const names=String(response.signed_field_names).split(",");
+      const message=names.map(name=>name+"="+String(response[name]??"")).join(",");
+      const expected=await hmacBase64(secret,message);
+      if(!same(expected,String(response.signature))) {
+        await db.query("UPDATE payment_transactions SET status='failed',failure_reason='eSewa response signature mismatch',provider_payload=$1::jsonb,updated_at=now() WHERE id=$2 AND status<>'succeeded'",[JSON.stringify({status:"signature_mismatch"}),payment.id]);
+        return res.redirect(go("review",payment.booking_ref));
+      }
+      const query=new URLSearchParams({product_code:String(product),total_amount:String(payment.amount),transaction_uuid:uuid});
+      const check=await fetch(ESEWA_STATUS+"?"+query.toString(),{method:"GET",headers:{"Accept":"application/json"}});
+      const verified=await check.json();
+      const verifiedAmount=Number(String(verified.total_amount??"").replace(/,/g,""));
+      if(!check.ok||verified.status!=="COMPLETE"||verified.transaction_uuid!==uuid||verified.product_code!==product||Math.abs(verifiedAmount-Number(payment.amount))>0.001||!verified.ref_id){
+        const state=["FULL_REFUND","PARTIAL_REFUND"].includes(verified.status)?"refunded":["CANCELED","NOT_FOUND"].includes(verified.status)?"cancelled":"pending";
+        await db.query("UPDATE payment_transactions SET status=$1,failure_reason=$2,provider_payload=$3::jsonb,updated_at=now() WHERE id=$4 AND status<>'succeeded'",[state,state==="pending"?"eSewa status is not complete":"eSewa status "+verified.status,JSON.stringify(verified),payment.id]);
+        return res.redirect(go(state==="cancelled"?"cancelled":state==="refunded"?"refunded":"pending",payment.booking_ref));
+      }
+      const state=await finish(payment,{callback:response,status_check:verified},""+verified.ref_id);
+      return res.redirect(go(state==="confirmed"?"success":"review",payment.booking_ref));
+    }catch(e){return res.redirect(go("pending",""))}
+  }
+  if(provider!=="khalti") return res.redirect(go("invalid",""));
   const pidx=String(req.query?.pidx||"");
-  if(!pidx||pidx.length>100) return res.redirect(SITE+"/my-trips.html?payment=invalid");
-  const found=await db.query(
-    "SELECT id,booking_id,booking_ref,user_id,amount_paisa,purchase_order_id,status FROM payment_transactions WHERE booking_type='bus' AND provider='khalti' AND provider_payment_id=$1 LIMIT 1",
-    [pidx]
-  );
-  if(!found.rows.length) return res.redirect(SITE+"/my-trips.html?payment=not-found");
+  if(!pidx||pidx.length>100) return res.redirect(go("invalid",""));
+  const found=await db.query("SELECT id,booking_id,booking_ref,user_id,amount_paisa,purchase_order_id,status,provider FROM payment_transactions WHERE booking_type='bus' AND provider='khalti' AND provider_payment_id=$1 LIMIT 1",[pidx]);
+  if(!found.rows.length) return res.redirect(go("not-found",""));
   const payment=found.rows[0];
-  if(payment.status==="succeeded") return res.redirect(SITE+"/my-trips.html?payment=success&ref="+encodeURIComponent(payment.booking_ref));
-  const secret=await config.get("KHALTI_SECRET_KEY");
-  if(!secret) return res.redirect(SITE+"/my-trips.html?payment=verify-later&ref="+encodeURIComponent(payment.booking_ref));
-  let verification;
-  try {
-    const response=await fetch(BASE+"/epayment/lookup/",{
-      method:"POST",headers:{"Authorization":"Key "+secret,"Content-Type":"application/json"},
-      body:JSON.stringify({pidx})
-    });
-    verification=await response.json();
-    if(!response.ok&&!verification.status) return res.redirect(SITE+"/my-trips.html?payment=pending&ref="+encodeURIComponent(payment.booking_ref));
-  } catch(e) {
-    return res.redirect(SITE+"/my-trips.html?payment=pending&ref="+encodeURIComponent(payment.booking_ref));
-  }
-  if(verification.pidx!==pidx||Number(verification.total_amount)!==Number(payment.amount_paisa)) {
-    await db.query("UPDATE payment_transactions SET status='failed',failure_reason='Khalti reference or amount mismatch',provider_payload=$1::jsonb,updated_at=now() WHERE id=$2 AND status<>'succeeded'",[JSON.stringify(verification),payment.id]);
-    return res.redirect(SITE+"/my-trips.html?payment=review&ref="+encodeURIComponent(payment.booking_ref));
-  }
-  const status=String(verification.status||"").toLowerCase();
-  if(status==="completed" && verification.refunded===true) {
-    await db.transaction([
-      {sql:"UPDATE payment_transactions SET status='refunded',provider_payload=$1::jsonb,updated_at=now() WHERE id=$2 AND status<>'succeeded'",params:[JSON.stringify(verification),payment.id]},
-      {sql:"UPDATE bookings SET status='payment_review' WHERE id=$1 AND status='confirmed'",params:[payment.booking_id]}
-    ]);
-    return res.redirect(SITE+"/my-trips.html?payment=refunded&ref="+encodeURIComponent(payment.booking_ref));
-  }
-  if(status==="completed" && !verification.transaction_id) {
-    await db.query("UPDATE payment_transactions SET status='pending',failure_reason='Khalti completed response missing transaction ID; manual verification required',provider_payload=$1::jsonb,updated_at=now() WHERE id=$2 AND status<>'succeeded'",[JSON.stringify(verification),payment.id]);
-    return res.redirect(SITE+"/my-trips.html?payment=review&ref="+encodeURIComponent(payment.booking_ref));
-  }
-  if(status==="completed") {
-    const tx=await db.transaction([
-      {sql:"UPDATE bookings SET status=CASE WHEN hold_expires_at>now() AND (SELECT count(*) FROM seat_inventory WHERE booking_id=$1 AND status='held' AND hold_expires_at>now())=cardinality(seat_numbers) THEN 'confirmed' ELSE 'payment_review' END,payment_mode='khalti',hold_expires_at=NULL WHERE id=$1 AND status IN ('awaiting_payment','expired','cancelled') RETURNING status",params:[payment.booking_id]},
-      {sql:"UPDATE seat_inventory SET status='booked',hold_token=NULL,hold_expires_at=NULL WHERE booking_id=$1 AND status='held' AND EXISTS (SELECT 1 FROM bookings WHERE id=$1 AND status='confirmed')",params:[payment.booking_id]},
-      {sql:"UPDATE payment_transactions SET status='succeeded',failure_reason=NULL,provider_payload=$1::jsonb,verified_at=now(),updated_at=now() WHERE id=$2 AND status<>'succeeded'",params:[JSON.stringify(verification),payment.id]}
-    ]);
-    const bookingState=tx.results?.[0]?.rows?.[0]?.status||"payment_review";
-    return res.redirect(SITE+"/my-trips.html?payment="+(bookingState==="confirmed"?"success":"review")+"&ref="+encodeURIComponent(payment.booking_ref));
-  }
-  if(status==="refunded") {
-    await db.transaction([
-      {sql:"UPDATE payment_transactions SET status='refunded',provider_payload=$1::jsonb,updated_at=now() WHERE id=$2",params:[JSON.stringify(verification),payment.id]},
-      {sql:"UPDATE bookings SET status='payment_review' WHERE id=$1 AND status='confirmed'",params:[payment.booking_id]}
-    ]);
-    return res.redirect(SITE+"/my-trips.html?payment=refunded&ref="+encodeURIComponent(payment.booking_ref));
-  }
-  if(status==="expired"||status==="user canceled") {
-    await db.query("UPDATE payment_transactions SET status=$1,failure_reason=$2,provider_payload=$3::jsonb,updated_at=now() WHERE id=$4 AND status<>'succeeded'",[status==="expired"?"failed":"cancelled",status,JSON.stringify(verification),payment.id]);
-    return res.redirect(SITE+"/my-trips.html?payment=cancelled&ref="+encodeURIComponent(payment.booking_ref));
-  }
-  await db.query("UPDATE payment_transactions SET status='pending',provider_payload=$1::jsonb,updated_at=now() WHERE id=$2 AND status<>'succeeded'",[JSON.stringify(verification),payment.id]);
-  return res.redirect(SITE+"/my-trips.html?payment=pending&ref="+encodeURIComponent(payment.booking_ref));
+  if(payment.status==="succeeded") return res.redirect(go("success",payment.booking_ref));
+  const secret=await config.get("KHALTI_LIVE_SECRET_KEY");
+  if(!secret) return res.redirect(go("verify-later",payment.booking_ref));
+  try{
+    const response=await fetch(KHALTI_URL+"/epayment/lookup/",{method:"POST",headers:{"Authorization":"Key "+secret,"Content-Type":"application/json"},body:JSON.stringify({pidx})});
+    const verification=await response.json();
+    if(!response.ok||verification.pidx!==pidx||Number(verification.total_amount)!==Number(payment.amount_paisa)) return res.redirect(go("review",payment.booking_ref));
+    const status=String(verification.status||"").toLowerCase();
+    if(status==="completed"&&verification.refunded===true){
+      await db.query("UPDATE payment_transactions SET status='refunded',provider_payload=$1::jsonb,updated_at=now() WHERE id=$2 AND status<>'succeeded'",[JSON.stringify(verification),payment.id]);
+      return res.redirect(go("refunded",payment.booking_ref));
+    }
+    if(status==="completed"&&verification.transaction_id){
+      const state=await finish(payment,verification,String(verification.transaction_id));
+      return res.redirect(go(state==="confirmed"?"success":"review",payment.booking_ref));
+    }
+    const mapped=status==="expired"?"failed":status==="user canceled"?"cancelled":"pending";
+    await db.query("UPDATE payment_transactions SET status=$1,provider_payload=$2::jsonb,updated_at=now() WHERE id=$3 AND status<>'succeeded'",[mapped,JSON.stringify(verification),payment.id]);
+    return res.redirect(go(mapped==="cancelled"?"cancelled":mapped==="failed"?"expired":"pending",payment.booking_ref));
+  }catch(e){return res.redirect(go("pending",payment.booking_ref))}
 }
