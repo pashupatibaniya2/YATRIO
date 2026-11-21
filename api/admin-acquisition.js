@@ -7,7 +7,7 @@ const clean = (v,max=240) => String(v??"").trim().slice(0,max);
 
 export default async function(req,res) {
   if(req.method==="GET") {
-    const [districts,leads,campaigns,operators,leadCount] = await Promise.all([
+    const [districts,leads,campaigns,operators,leadCount,stageCounts] = await Promise.all([
       db.query(`SELECT t.province,t.district,t.target_count,
         count(l.id)::int AS leads,
         count(l.id) FILTER (WHERE l.status='contacted')::int AS contacted,
@@ -27,7 +27,8 @@ export default async function(req,res) {
         count(DISTINCT referral_code || ':' || visitor_key)::int AS unique_visits
         FROM operator_referral_click_events GROUP BY campaign ORDER BY count(*) DESC,campaign ASC`),
       db.query("SELECT count(*)::int AS approved FROM operators WHERE owner_user_id IS NOT NULL AND status='approved'"),
-      db.query("SELECT count(*)::int AS total FROM operator_acquisition_leads")
+      db.query("SELECT count(*)::int AS total FROM operator_acquisition_leads"),
+      db.query("SELECT status,count(*)::int AS count FROM operator_acquisition_leads GROUP BY status")
     ]);
     const totalLeads=leads.rows.length;
     const byProvince={};
@@ -36,7 +37,7 @@ export default async function(req,res) {
       const p=byProvince[d.province];p.districts++;p.target+=Number(d.target_count||0);p.leads+=Number(d.leads||0);p.contacted+=Number(d.contacted||0);p.interested+=Number(d.interested||0);p.application_started+=Number(d.application_started||0);p.converted+=Number(d.converted||0);
     }
     return res.json({
-      summary:{districts:districts.rows.length,target:districts.rows.reduce((n,x)=>n+Number(x.target_count||0),0),leads:Number(leadCount.rows[0]?.total||0),new:leads.rows.filter(x=>x.status==="new").length,contacted:leads.rows.filter(x=>x.status==="contacted").length,interested:leads.rows.filter(x=>x.status==="interested").length,application_started:leads.rows.filter(x=>x.status==="application_started").length,converted:leads.rows.filter(x=>x.status==="converted").length,approved_operators:Number(operators.rows[0]?.approved||0)},
+      summary:{districts:districts.rows.length,target:districts.rows.reduce((n,x)=>n+Number(x.target_count||0),0),leads:Number(leadCount.rows[0]?.total||0),new:Number(stageCounts.rows.find(x=>x.status==="new")?.count||0),contacted:Number(stageCounts.rows.find(x=>x.status==="contacted")?.count||0),interested:Number(stageCounts.rows.find(x=>x.status==="interested")?.count||0),application_started:Number(stageCounts.rows.find(x=>x.status==="application_started")?.count||0),converted:Number(stageCounts.rows.find(x=>x.status==="converted")?.count||0),approved_operators:Number(operators.rows[0]?.approved||0)},
       provinces:Object.values(byProvince),districts:districts.rows,leads:leads.rows,campaigns:campaigns.rows
     });
   }
