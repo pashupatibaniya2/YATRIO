@@ -18,18 +18,7 @@ export default async function(req,res){
   return res.json({tickets:tickets.rows,failed_emails:emails.rows});
  }
  const action=String(req.body?.action||"");
- if(action==="cleanup_qa"){
-  const threads=await db.query("DELETE FROM communication_threads WHERE booking_ref LIKE 'YTRIO-QA-%' RETURNING id");
-  const tickets=await db.query("DELETE FROM support_tickets WHERE subject IN ('V87 automated QA ticket','V92 support QA') RETURNING id");
-  const notifications=await db.query("DELETE FROM booking_notifications WHERE booking_ref LIKE 'YTRIO-QA-%' RETURNING id");
-  const qaBookings=await db.query("SELECT id FROM bookings WHERE pnr LIKE 'YTRIO-QA-%'");
-  if(qaBookings.rows.length)await db.query("DELETE FROM booking_timeline WHERE booking_id = ANY($1::uuid[])",[qaBookings.rows.map(x=>x.id)]);
-  const bookings=await db.query("DELETE FROM bookings WHERE pnr LIKE 'YTRIO-QA-%' RETURNING id");
-  const qaOperators=await db.query("SELECT id FROM operators WHERE name='YATRIO QA Temporary Operator'");
-  if(qaOperators.rows.length)await db.query("DELETE FROM operator_users WHERE operator_id = ANY($1::uuid[])",[qaOperators.rows.map(x=>x.id)]);
-  const operators=await db.query("DELETE FROM operators WHERE name='YATRIO QA Temporary Operator' RETURNING id");
-  return res.json({cleaned:true,threads:threads.rows.length,tickets:tickets.rows.length,notifications:notifications.rows.length,bookings:bookings.rows.length,operators:operators.rows.length});
- }
+ // Temporary QA cleanup endpoint removed after verification.
  if(action==="reply_ticket"){
   const id=String(req.body.ticket_id||""),body=String(req.body.body||"").trim();
   if(!/^[0-9a-f-]{36}$/i.test(id)||body.length<1||body.length>3000)return res.status(400).json({error:"Write a reply of 1–3,000 characters."});
