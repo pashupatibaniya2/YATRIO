@@ -26,6 +26,7 @@ export default async function(req,res){
   if(!t.rows.length)return res.status(404).json({error:"Support ticket not found."});
   await db.query("INSERT INTO support_ticket_messages(ticket_id,user_id,sender_user_id,sender_role,body) VALUES($1,$2,$3,'admin',$4)",[id,String(t.rows[0].user_id),String(req.user?.id||"admin"),body]);
   await db.query("UPDATE support_tickets SET status=CASE WHEN status='resolved' THEN 'resolved' ELSE 'in_progress' END,assigned_admin=$2,updated_at=now() WHERE id=$1",[id,String(req.user?.id||"admin")]);
+  await db.query("INSERT INTO operator_admin_audit(actor_user_id,action,target_type,target_id,reason,details) VALUES($1,'ticket_reply','passenger_ticket',$2,'',jsonb_build_object('message_length',$3))",[String(req.user?.id||"admin"),id,body.length]);
   return res.status(201).json({message:"Reply sent to the ticket."});
  }
  if(action==="set_ticket_status"){
@@ -33,6 +34,7 @@ export default async function(req,res){
   if(!/^[0-9a-f-]{36}$/i.test(id)||!["open","in_progress","resolved"].includes(status))return res.status(400).json({error:"Choose a valid ticket status."});
   const q=await db.query("UPDATE support_tickets SET status=$2,updated_at=now(),resolved_at=CASE WHEN $2='resolved' THEN now() ELSE NULL END,assigned_admin=$3 WHERE id=$1 RETURNING id,status",[id,status,String(req.user?.id||"admin")]);
   if(!q.rows.length)return res.status(404).json({error:"Support ticket not found."});
+  await db.query("INSERT INTO operator_admin_audit(actor_user_id,action,target_type,target_id,reason,details) VALUES($1,'ticket_status_changed','passenger_ticket',$2,'',jsonb_build_object('status',$3))",[String(req.user?.id||"admin"),id,status]);
   return res.json({ticket:q.rows[0]});
  }
  if(action==="retry_email"){

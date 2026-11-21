@@ -25,6 +25,7 @@ export default async function(req,res) {
  if(target==="approved"){
   await db.query("INSERT INTO operator_referral_codes (operator_id,code) SELECT $1,$2 WHERE EXISTS (SELECT 1 FROM operators WHERE id=$1 AND owner_user_id IS NOT NULL) ON CONFLICT (operator_id) DO NOTHING",[id,"YTR"+id.replace(/-/g,"").slice(0,8).toUpperCase()]);
  }
+ await db.query("INSERT INTO operator_admin_audit(actor_user_id,action,target_type,target_id,operator_id,reason,details) VALUES($1,$2,'operator',$3,$3,$4,$5::jsonb)",[String(req.user?.id||"admin"),"operator_"+status,id,String(req.body?.reason||"").trim().slice(0,500),JSON.stringify({requested_status:status,final_status:target})]);
  const message=status==="suspended"?"Operator suspended. Public departures and new reservations are now disabled.":status==="unsuspended"?(target==="approved"?"Operator unsuspended and reactivated.":"Operator unsuspended to pending review because all four required documents are not currently approved."):"Operator status updated.";
  return res.json({operator:updated.rows[0],message});
 }
