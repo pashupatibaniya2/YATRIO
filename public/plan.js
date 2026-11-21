@@ -187,7 +187,7 @@ function setupActualSpend(){
 }
 function setupTripActions(origin,dest,days,style){
  const root=document.getElementById("tripResult");
- root.querySelectorAll(".wish-btn").forEach(btn=>btn.addEventListener("click",()=>{btn.classList.toggle("active");btn.textContent=btn.classList.contains("active")?"✓ Added":"＋ Wishlist";}));
+ root.addEventListener("click",e=>{const btn=e.target.closest(".wish-btn");if(!btn)return;btn.classList.toggle("active");btn.textContent=btn.classList.contains("active")?"✓ Added":"＋ Wishlist";});
  document.getElementById("printTripBtn").addEventListener("click",()=>window.print());
  const saveBtn=document.getElementById("saveTripBtn"),shareBtn=document.getElementById("shareTripBtn");
  saveBtn.addEventListener("click",async()=>{
@@ -217,18 +217,19 @@ async function loadSavedTrip(){
  const id=new URLSearchParams(location.search).get("trip");if(!id)return;
  try{
   const r=await fetch("/api/saved-trips?id="+encodeURIComponent(id));const d=await r.json();if(!r.ok)throw new Error(d.error||"Could not load saved trip.");
-  const t=d.trip;window.yatrioSavedTripId=t.id;
+  const t=d.trip;window.yatrioSavedTripId=t.id;window.yatrioLoadedWishlist=t.wishlist||[];
   document.getElementById("origin").value=t.origin;document.getElementById("destination").value=t.destination;document.getElementById("days").value=String(Math.min(7,t.trip_days));document.getElementById("style").value=t.travel_style;
   renderPlan(false);
   const b=t.budget||{};const values={budgetPeople:b.travellers,budgetNights:b.nights,budgetBus:b.travellers?b.returnBus/b.travellers:undefined,budgetHotel:b.rooms&&b.nights?b.hotel/(b.rooms*b.nights):undefined,budgetFood:b.travellers&&b.nights!==undefined?b.meals/(b.travellers*(b.nights+1)):undefined,budgetLocal:b.travellers&&b.nights!==undefined?b.localTransport/(b.travellers*(b.nights+1)):undefined,budgetActivities:b.travellers?b.activities/b.travellers:undefined};
   Object.entries(values).forEach(([k,v])=>{if(v!==undefined&&Number.isFinite(Number(v)))document.getElementById(k).value=String(v);});
   document.getElementById("budgetPeople").dispatchEvent(new Event("input"));
   const actual=t.actual_spend||{};Object.entries({actualBus:actual.bus,actualHotel:actual.hotel,actualFood:actual.meals,actualLocal:actual.localTransport,actualActivities:actual.activities}).forEach(([k,v])=>{if(v!==undefined)document.getElementById(k).value=v;});
-  document.querySelectorAll(".wish-btn").forEach(btn=>{if((t.wishlist||[]).includes(btn.dataset.place)){btn.classList.add("active");btn.textContent="✓ Added";}});
+  document.querySelectorAll(".wish-btn").forEach(btn=>{if((t.wishlist||[]).includes(btn.dataset.place)){btn.classList.add("active");btn.textContent="✓ Added";}});document.getElementById("actualBus").dispatchEvent(new Event("input"));
   document.getElementById("saveTripBtn").textContent="Update saved trip";document.getElementById("shareTripBtn").disabled=false;
  }catch(e){console.warn("Saved trip could not be loaded",e);alert(e.message);}
 }
 
+function restoreLoadedWishlist(container){if(!window.yatrioLoadedWishlist)return;container.querySelectorAll(".wish-btn").forEach(btn=>{if(window.yatrioLoadedWishlist.includes(btn.dataset.place)){btn.classList.add("active");btn.textContent="✓ Added";}});}
 async function loadTripConnections(origin,destinationName,displayDestination){
   const stayRoot=document.getElementById("planStays"),busRoot=document.getElementById("planBuses");
   const city=displayDestination==="Chitwan"?"Sauraha":displayDestination==="Lalitpur (Patan)"?"Lalitpur":displayDestination==="Everest Region"?"Lukla":displayDestination;
@@ -237,13 +238,15 @@ async function loadTripConnections(origin,destinationName,displayDestination){
     const response=await fetch("/api/marketplace-listings?category=stays&city="+encodeURIComponent(city));
     const data=await response.json();
     if(!response.ok)throw new Error(data.error||"Stay search unavailable");
-    stayRoot.innerHTML=data.listings.length?data.listings.slice(0,3).map(x=>'<article class="inventory-item">'+(x.images&&x.images[0]?'<img src="'+esc(x.images[0].url)+'" alt="'+esc(x.images[0].alt_text||x.title)+'">':'<div class="day-number" style="width:54px;height:54px">⌂</div>')+'<div class="item-copy"><b>'+esc(x.title)+'</b><small>'+esc(x.business_name)+' · '+esc(x.city)+' · '+Number(x.available_quantity||0)+' available</small><div class="price">NPR '+Number(x.price_from).toLocaleString("en-IN")+' / '+esc(x.price_unit.replace("per_",""))+'</div></div></article>').join(""):'<div class="inventory-empty">No published hotel or stay listings with upcoming availability in '+esc(city)+' yet. You can still browse the stay category as local partners join. <a href="'+stayUrl+'">Browse stays →</a></div>';
+    stayRoot.innerHTML=data.listings.length?data.listings.slice(0,3).map(x=>'<article class="inventory-item">'+(x.images&&x.images[0]?'<img src="'+esc(x.images[0].url)+'" alt="'+esc(x.images[0].alt_text||x.title)+'">':'<div class="day-number" style="width:54px;height:54px">⌂</div>')+'<div class="item-copy"><b>'+esc(x.title)+'</b><small>'+esc(x.business_name)+' · '+esc(x.city)+' · '+Number(x.available_quantity||0)+' available</small><div class="price">NPR '+Number(x.price_from).toLocaleString("en-IN")+' / '+esc(x.price_unit.replace("per_",""))+'</div></div><button type="button" class="wish-btn" data-place="Stay: '+esc(x.title)+'">＋ Wishlist</button></article>').join(""):'<div class="inventory-empty">No published hotel or stay listings with upcoming availability in '+esc(city)+' yet. You can still browse the stay category as local partners join. <a href="'+stayUrl+'">Browse stays →</a></div>';
+  restoreLoadedWishlist(stayRoot);
   }catch(error){stayRoot.innerHTML='<div class="inventory-empty">Could not load stays right now. <a href="'+stayUrl+'">Open stay search</a>.</div>';}
   try{
     const response=await fetch("/api/search?from="+encodeURIComponent(origin)+"&to="+encodeURIComponent(destinationName));
     const data=await response.json();
     if(!response.ok)throw new Error(data.error||"Bus search unavailable");
-    busRoot.innerHTML=data.results.length?data.results.slice(0,3).map(x=>'<article class="inventory-item"><div class="day-number" style="width:54px;height:54px">BUS</div><div class="item-copy"><b>'+esc(x.operator_name)+' · '+esc(x.bus_name)+'</b><small>'+esc(x.origin_terminal)+' → '+esc(x.destination_terminal)+' · '+new Date(x.departure_at).toLocaleString("en-GB",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Kathmandu"})+'</small><div class="price">NPR '+Number(x.fare).toLocaleString("en-IN")+' · '+Number(x.available_seats)+' seats shown</div></div></article>').join(""):'<div class="inventory-empty">No upcoming published bus schedule was found for '+esc(origin)+' → '+esc(destinationName)+'. Try another starting city or <a href="/?from='+encodeURIComponent(origin)+'&to='+encodeURIComponent(destinationName)+'">open bus search →</a>.</div>';
+    busRoot.innerHTML=data.results.length?data.results.slice(0,3).map(x=>`<article class="inventory-item"><div class="day-number" style="width:54px;height:54px">BUS</div><div class="item-copy"><b>${esc(x.operator_name)} · ${esc(x.bus_name)}</b><small>${esc(x.origin_terminal)} → ${esc(x.destination_terminal)} · ${new Date(x.departure_at).toLocaleString("en-GB",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Kathmandu"})}</small><div class="price">NPR ${Number(x.fare).toLocaleString("en-IN")} · ${Number(x.available_seats)} seats shown</div></div><button type="button" class="wish-btn" data-place="Bus: ${esc(x.operator_name)} · ${esc(x.bus_name)}">＋ Wishlist</button></article>`).join(""):'<div class="inventory-empty">No upcoming published bus schedule was found for '+esc(origin)+' → '+esc(destinationName)+'. Try another starting city or <a href="/?from='+encodeURIComponent(origin)+'&to='+encodeURIComponent(destinationName)+'">open bus search →</a>.</div>';
+  restoreLoadedWishlist(busRoot);
   }catch(error){busRoot.innerHTML='<div class="inventory-empty">Could not load bus schedules right now. <a href="/?from='+encodeURIComponent(origin)+'&to='+encodeURIComponent(destinationName)+'">Open bus search</a>.</div>';}
 }
 form.addEventListener("submit",e=>{e.preventDefault();renderPlan(true)});
