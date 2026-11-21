@@ -4,8 +4,8 @@
  if(!panel||!view||!fallback)return;
  let THREE,OrbitControls;
  try{
-  THREE=await import("https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js");
-  ({OrbitControls}=await import("https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/controls/OrbitControls.js"));
+  THREE=await import("https://esm.sh/three@0.161.0");
+  ({OrbitControls}=await import("https://esm.sh/three@0.161.0/examples/jsm/controls/OrbitControls.js"));
   if(!document.querySelector("#seatGrid [data-seat-id]"))await new Promise(resolve=>{const grid=document.getElementById("seatGrid");if(!grid)return resolve();const observer=new MutationObserver(()=>{if(grid.querySelector("[data-seat-id]")){observer.disconnect();resolve()}});observer.observe(grid,{childList:true,subtree:true})});
  }catch(e){console.warn("3D library unavailable; CSS seat map remains active",e);return}
  const canvas=document.createElement("canvas");canvas.className="bus3d-canvas";canvas.setAttribute("aria-label","Interactive 3D bus interior. Drag to orbit; select a seat.");canvas.style.display="none";view.insertBefore(canvas,fallback);
