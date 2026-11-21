@@ -60,17 +60,17 @@
     const w=isBed ? .72 : .66,d=isBed ? 1.52 : .74;
     const parts=[];
     if(isBed){
-     const platform=cube(g,w,.18,d,edge,0,.28,0);parts.push(platform);
-     const mattress=cube(g,w-.07,.16,d-.08,normal,0,.46,0);parts.push(mattress);
-     const pillow=cube(g,w*.72,.12,.3,edge,0,.6,-d/2+.22);parts.push(pillow);
-     cube(g,.06,.13,d*.82,edge,-w/2-.03,.48,0);cube(g,.06,.13,d*.82,edge,w/2+.03,.48,0);
-     const rail=cube(g,w,.09,.07,edge,0,.62,d/2-.06);parts.push(rail);
+     const platform=cube(g,w,.18,d,seatEdge,0,.28,0);parts.push(platform);
+     const mattress=cube(g,w-.07,.16,d-.08,seatNormal,0,.46,0);parts.push(mattress);
+     const pillow=cube(g,w*.72,.12,.3,seatEdge,0,.6,-d/2+.22);parts.push(pillow);
+     cube(g,.06,.13,d*.82,seatEdge,-w/2-.03,.48,0);cube(g,.06,.13,d*.82,seatEdge,w/2+.03,.48,0);
+     const rail=cube(g,w,.09,.07,seatEdge,0,.62,d/2-.06);parts.push(rail);
     }else{
-     const base=cube(g,w,.18,d,edge,0,.24,0);parts.push(base);
-     const cushion=cube(g,w-.06,.13,d-.06,normal,0,.37,0);parts.push(cushion);
-     const back=cube(g,w,.76,.16,normal,0,.8,-d/2+.05);parts.push(back);
-     const head=cube(g,w*.68,.2,.18,edge,0,1.27,-d/2+.02);parts.push(head);
-     for(const side of [-1,1])cube(g,.08,.16,d*.75,edge,side*(w/2+.03),.52,0);
+     const base=cube(g,w,.18,d,seatEdge,0,.24,0);parts.push(base);
+     const cushion=cube(g,w-.06,.13,d-.06,seatNormal,0,.37,0);parts.push(cushion);
+     const back=cube(g,w,.76,.16,seatNormal,0,.8,-d/2+.05);parts.push(back);
+     const head=cube(g,w*.68,.2,.18,seatEdge,0,1.27,-d/2+.02);parts.push(head);
+     for(const side of [-1,1])cube(g,.08,.16,d*.75,seatEdge,side*(w/2+.03),.52,0);
     }
     const label=makeLabel(b.textContent.trim());label.scale.set(.48,.24,1);label.position.set(0,isBed ? .82 : .55,d*.48);g.add(label);
     g.userData.parts=parts;g.userData.unavailable=b.disabled;g.userData.selected=false;cabin.add(g);seatMap.set(b.dataset.seatId,g);
