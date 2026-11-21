@@ -9,12 +9,13 @@ export default async function(req,res) {
   }
   const id=String(req.body?.document_id||""), status=String(req.body?.review_status||""), note=String(req.body?.review_note||"").trim().slice(0,500);
   if(!/^[0-9a-f-]{36}$/i.test(id)||!["approved","rejected"].includes(status)||(status==="rejected"&&!note)) return res.status(400).json({error:"Provide a document, valid review decision and a rejection reason when rejecting."});
+  const actor=String(req.user?.id||"admin");
   const updated=await db.transaction([
     {sql:"UPDATE operator_documents SET review_status=$1,verification_status=$1,review_note=$2,reviewed_at=now(),updated_at=now() WHERE id=$3 RETURNING id,operator_id,document_type,review_status,review_note",params:[status,note,id]},
-    {sql:"UPDATE operators SET status='pending' WHERE id=(SELECT operator_id FROM operator_documents WHERE id=$1) AND status='approved' AND $2='rejected'",params:[id,status]}
+    {sql:"UPDATE operators SET status='pending' WHERE id=(SELECT operator_id FROM operator_documents WHERE id=$1) AND status='approved' AND $2='rejected'",params:[id,status]},
+    {sql:"INSERT INTO operator_admin_audit(actor_user_id,action,target_type,target_id,operator_id,reason,details) SELECT $1,$2,'operator_document',$3,d.operator_id,$4,$5::jsonb FROM operator_documents d WHERE d.id=$3",params:[actor,"document_"+status,id,note,JSON.stringify({review_status:status})]}
   ]);
   if(!updated.results[0].rows.length) return res.status(404).json({error:"Document not found."});
   const reviewed=updated.results[0].rows[0];
-  await db.query("INSERT INTO operator_admin_audit(actor_user_id,action,target_type,target_id,operator_id,reason,details) VALUES($1,$2,'operator_document',$3,$4,$5,$6::jsonb)",[String(req.user?.id||"admin"),"document_"+status,id,reviewed.operator_id,note,JSON.stringify({document_type:reviewed.document_type,review_status:status})]);
   return res.json({document:reviewed,message:"Document review saved. If a previously approved operator no longer has all required approvals, its account has been returned to pending review."});
 }

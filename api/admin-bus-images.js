@@ -9,8 +9,10 @@ export default async function(req,res){
  }
  const id=String(req.body?.image_id||""),status=String(req.body?.review_status||""),note=String(req.body?.review_note||"").trim().slice(0,300);
  if(!/^[0-9a-f-]{36}$/i.test(id)||!["approved","rejected"].includes(status))return res.status(400).json({error:"Choose a valid image and review decision."});
- const result=await db.query("UPDATE bus_fleet_images SET review_status=$1,review_note=$2,reviewed_at=now() WHERE id=$3 AND review_status='pending' RETURNING id,operator_id,review_status",[status,note,id]);
- if(!result.rows.length)return res.status(404).json({error:"Pending bus photo not found."});
- await db.query("INSERT INTO operator_admin_audit(actor_user_id,action,target_type,target_id,operator_id,reason,details) VALUES($1,$2,'fleet_photo',$3,$4,$5,$6::jsonb)",[String(req.user?.id||"admin"),"photo_"+status,id,result.rows[0].operator_id,note,JSON.stringify({review_status:status})]);
- return res.json({image:result.rows[0],message:status==="approved"?"Bus photo approved and visible to travellers.":"Bus photo rejected and hidden from travellers."});
+ const result=await db.transaction([
+  {sql:"UPDATE bus_fleet_images SET review_status=$1,review_note=$2,reviewed_at=now() WHERE id=$3 AND review_status='pending' RETURNING id,operator_id,review_status",params:[status,note,id]},
+  {sql:"INSERT INTO operator_admin_audit(actor_user_id,action,target_type,target_id,operator_id,reason,details) SELECT $1,$2,'fleet_photo',$3,i.operator_id,$4,$5::jsonb FROM bus_fleet_images i WHERE i.id=$3 AND i.review_status=$6",params:[String(req.user?.id||"admin"),"photo_"+status,id,note,JSON.stringify({review_status:status}),status]}
+ ]);
+ if(!result.results[0].rows.length)return res.status(404).json({error:"Pending bus photo not found."});
+ return res.json({image:result.results[0].rows[0],message:status==="approved"?"Bus photo approved and visible to travellers.":"Bus photo rejected and hidden from travellers."});
 }

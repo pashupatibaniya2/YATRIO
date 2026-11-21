@@ -16,16 +16,17 @@ export default async function(req,res) {
    target="pending";
   } else target="approved";
  }
- const updated=await db.query("UPDATE operators SET status=$1 WHERE id=$2 AND ($1<>'approved' OR ((SELECT count(*) FROM operator_documents WHERE operator_id=$2)=4 AND (SELECT count(*) FROM operator_documents WHERE operator_id=$2 AND review_status='approved')=4)) RETURNING id,name,status",[target,id]);
- if(!updated.rows.length){
+ const reason=String(req.body?.reason||"").trim().slice(0,500),actor=String(req.user?.id||"admin");
+ const updated=await db.transaction([
+  {sql:"UPDATE operators SET status=$1 WHERE id=$2 AND ($1<>'approved' OR ((SELECT count(*) FROM operator_documents WHERE operator_id=$2)=4 AND (SELECT count(*) FROM operator_documents WHERE operator_id=$2 AND review_status='approved')=4)) RETURNING id,name,status",params:[target,id]},
+  {sql:"INSERT INTO operator_referral_codes (operator_id,code) SELECT $1,$2 WHERE $3='approved' AND EXISTS (SELECT 1 FROM operators WHERE id=$1 AND owner_user_id IS NOT NULL) ON CONFLICT (operator_id) DO NOTHING",params:[id,"YTR"+id.replace(/-/g,"").slice(0,8).toUpperCase(),target]},
+  {sql:"INSERT INTO operator_admin_audit(actor_user_id,action,target_type,target_id,operator_id,reason,details) SELECT $1,$2,'operator',$3,$3,$4,$5::jsonb WHERE EXISTS (SELECT 1 FROM operators WHERE id=$3 AND status=$6 AND ($6<>'approved' OR ((SELECT count(*) FROM operator_documents WHERE operator_id=$3)=4 AND (SELECT count(*) FROM operator_documents WHERE operator_id=$3 AND review_status='approved')=4)))",params:[actor,"operator_"+status,id,reason,JSON.stringify({requested_status:status,final_status:target}),target]}
+ ]);
+ if(!updated.results[0].rows.length){
   const exists=await db.query("SELECT id FROM operators WHERE id=$1",[id]);
   if(exists.rows.length&&target==="approved")return res.status(409).json({error:"The four required documents changed during review. Refresh the application and verify all four documents again."});
   return res.status(404).json({error:"Operator application not found."});
  }
- if(target==="approved"){
-  await db.query("INSERT INTO operator_referral_codes (operator_id,code) SELECT $1,$2 WHERE EXISTS (SELECT 1 FROM operators WHERE id=$1 AND owner_user_id IS NOT NULL) ON CONFLICT (operator_id) DO NOTHING",[id,"YTR"+id.replace(/-/g,"").slice(0,8).toUpperCase()]);
- }
- await db.query("INSERT INTO operator_admin_audit(actor_user_id,action,target_type,target_id,operator_id,reason,details) VALUES($1,$2,'operator',$3,$3,$4,$5::jsonb)",[String(req.user?.id||"admin"),"operator_"+status,id,String(req.body?.reason||"").trim().slice(0,500),JSON.stringify({requested_status:status,final_status:target})]);
  const message=status==="suspended"?"Operator suspended. Public departures and new reservations are now disabled.":status==="unsuspended"?(target==="approved"?"Operator unsuspended and reactivated.":"Operator unsuspended to pending review because all four required documents are not currently approved."):"Operator status updated.";
  return res.json({operator:updated.rows[0],message});
 }
