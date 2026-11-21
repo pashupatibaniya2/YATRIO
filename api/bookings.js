@@ -33,12 +33,12 @@ export default async function(req,res) {
   const pnr = "YT" + crypto.randomUUID().replace(/-/g,"").slice(0,8).toUpperCase();
   try {
     const created = await db.query(
-      "INSERT INTO bookings (pnr,schedule_id,passenger_name,passenger_email,passenger_phone,seat_numbers,total_amount,status,payment_mode,customer_user_id,operator_id,commission_rate,commission_amount,provider_payout_amount,currency,hold_expires_at) VALUES ($1,$2,$3,$4,$5,$6,$7,'awaiting_payment','demo',$8,$9,$10,$11,$12,'NPR',now()+interval '8 minutes') RETURNING id,pnr,total_amount,status,created_at,commission_amount,provider_payout_amount,hold_expires_at",
+      "INSERT INTO bookings (pnr,schedule_id,passenger_name,passenger_email,passenger_phone,seat_numbers,total_amount,status,payment_mode,customer_user_id,operator_id,commission_rate,commission_amount,provider_payout_amount,currency,hold_expires_at) VALUES ($1,$2,$3,$4,$5,$6,$7,'awaiting_payment','unpaid',$8,$9,$10,$11,$12,'NPR',now()+interval '8 minutes') RETURNING id,pnr,total_amount,status,created_at,commission_amount,provider_payout_amount,hold_expires_at",
       [pnr,scheduleId,name,email,phone,seatRows.map(x=>x.seat_number),gross,req.user?.id ? String(req.user.id) : null,scheduleRows[0].operator_id,rate,commission,payout]
     );
     const linked=await db.query("UPDATE seat_inventory SET booking_id=$1 WHERE hold_token=$2 AND status='held' AND hold_expires_at > now() RETURNING id",[created.rows[0].id,token]);
     if(linked.rows.length!==seatIds.length) throw new Error("The seat hold expired before the reservation could be completed. Please select seats again.");
-    res.status(201).json({booking:created.rows[0], seats:seatRows.map(x=>x.seat_number), hold_expires_in_minutes:8, demo_payment:true, message:"Demo reservation created. No money has been collected and this is not a confirmed travel ticket."});
+    res.status(201).json({booking:created.rows[0], seats:seatRows.map(x=>x.seat_number), hold_expires_in_minutes:8, payment_required:true, message:"Reservation reference created. Payment is required; the booking is not a confirmed ticket until the wallet provider verifies payment."});
   } catch (e) {
     await db.query("UPDATE bookings SET status='expired' WHERE pnr=$1 AND status='awaiting_payment'",[pnr]);
     await db.query("UPDATE seat_inventory SET status='available',hold_token=NULL,hold_expires_at=NULL,booking_id=NULL WHERE hold_token=$1",[token]);
