@@ -13,14 +13,14 @@ function validateSeats(input,capacity){
  const seenNames=new Set(),seenSlots=new Set();
  return input.map((s,i)=>{
   const seat_number=String(s?.seat_number||"").trim().toUpperCase();
-  const row=Number(s?.row),col=Number(s?.col),seat_type=String(s?.seat_type||"standard");
+  const row=Number(s?.row),col=Number(s?.col),deck=Number(s?.deck)||1,seat_type=String(s?.seat_type||"standard");
   if(!/^[A-Z0-9-]{1,8}$/.test(seat_number))throw new Error("Seat numbers must be 1–8 letters, numbers or hyphens.");
   if(seenNames.has(seat_number))throw new Error("Duplicate seat number: "+seat_number+".");
-  if(!Number.isInteger(row)||row<1||row>20||!Number.isInteger(col)||col<1||col>4)throw new Error("Seat positions must use rows 1–20 and columns 1–4.");
+  if(!Number.isInteger(row)||row<1||row>20||!Number.isInteger(col)||col<1||col>4||![1,2].includes(deck))throw new Error("Seat positions must use rows 1–20, columns 1–4 and deck 1 or 2.");
   if(!["standard","sofa","sleeper_berth"].includes(seat_type))throw new Error("Choose a valid seat type.");
-  const slot=row+":"+col;if(seenSlots.has(slot))throw new Error("Two seats cannot occupy the same position (row "+row+", column "+col+").");
+  const slot=deck+":"+row+":"+col;if(seenSlots.has(slot))throw new Error("Two seats cannot occupy the same position on the same deck (row "+row+", column "+col+").");
   seenNames.add(seat_number);seenSlots.add(slot);
-  return {seat_number,seat_type,row,col};
+  return {seat_number,seat_type,row,col,deck};
  });
 }
 export default async function(req,res){
@@ -34,13 +34,14 @@ export default async function(req,res){
  const existing=(await db.query("SELECT seat_number,seat_type FROM bus_seats WHERE bus_id=$1",[busId])).rows.sort((a,b)=>String(a.seat_number).localeCompare(String(b.seat_number),undefined,{numeric:true,sensitivity:"base"}));
  if(req.method==="GET"){
   const configured=Array.isArray(bus.seat_layout_config?.seats)?bus.seat_layout_config.seats:null;
+  const deckCount=Number(bus.seat_layout_config?.vehicle?.deck_count)||1;
   const defaults=defaultSeats(existing,Number(bus.capacity),bus.bus_type);
   const map=new Map((configured||[]).map(s=>[String(s.seat_number),s]));
   const seats=defaults.map(s=>({...s,...(map.get(s.seat_number)||{})}));
-  return res.json({bus:{id:bus.id,capacity:bus.capacity,bus_type:bus.bus_type,seat_layout_config:bus.seat_layout_config},seats,editable:(await db.query("SELECT NOT EXISTS(SELECT 1 FROM schedules WHERE bus_id=$1) AS editable",[busId])).rows[0].editable});
+  return res.json({bus:{id:bus.id,capacity:bus.capacity,bus_type:bus.bus_type,seat_layout_config:bus.seat_layout_config},deck_count:deckCount,seats,editable:(await db.query("SELECT NOT EXISTS(SELECT 1 FROM schedules WHERE bus_id=$1) AS editable",[busId])).rows[0].editable});
  }
  let seats;
- try{seats=validateSeats(req.body?.seats,Number(bus.capacity));}catch(e){return res.status(400).json({error:e.message});}
+ try{seats=validateSeats(req.body?.seats,Number(bus.capacity));if(seats.some(s=>s.deck>(Number(bus.seat_layout_config?.vehicle?.deck_count)||1)))throw new Error("A seat cannot be assigned to a deck that is not enabled for this bus.");}catch(e){return res.status(400).json({error:e.message});}
  const lock=(await db.query("SELECT NOT EXISTS(SELECT 1 FROM schedules WHERE bus_id=$1) AS editable",[busId])).rows[0];
  if(!lock.editable)return res.status(409).json({error:"This bus already has schedules. Its seat identities are locked to protect existing bookings and holds. Create a new bus to use a different seat map."});
  const config={...(bus.seat_layout_config||{}),seats};

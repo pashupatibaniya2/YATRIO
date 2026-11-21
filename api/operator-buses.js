@@ -2,13 +2,20 @@ import { db } from "hatchable";
 export const access = "user";
 export const methods = ["GET","POST","PUT"];
 async function owner(uid){return (await db.query("SELECT o.id,o.status FROM operators o JOIN operator_users ou ON ou.operator_id=o.id WHERE ou.user_id=$1 LIMIT 1",[uid])).rows[0]}
+function cleanVehicle(v){
+ if(!v||typeof v!=="object")return undefined;
+ const valid=["front_left","front_right","mid_left","mid_right","rear_left","rear_right","none"];
+ const pos=x=>valid.includes(String(x))?String(x):"none";
+ const list=(x,fallback)=>Array.isArray(x)?[...new Set(x.map(pos).filter(p=>p!=="none"))].slice(0,4):fallback;
+ return {deck_count:Number(v.deck_count)===2?2:1,driver_position:["front_left","front_right"].includes(v.driver_position)?v.driver_position:"front_left",conductor_position:pos(v.conductor_position),stairs:pos(v.stairs)==="none"?"rear_right":pos(v.stairs),doors:list(v.doors,["mid_left","front_right"]),emergency_exits:list(v.emergency_exits,["rear_left","rear_right"])};
+}
 function cleanLayoutConfig(input,type){
  const raw=input&&typeof input==="object"?input:{};
  const layout=["auto","coach_2x2","sofa_2x1","sleeper_2x1"].includes(raw.layout)?raw.layout:"auto";
  const color=(v,fallback)=>/^#[0-9a-f]{6}$/i.test(String(v||""))?String(v).toLowerCase():fallback;
  const width=Number(raw.cabin_width),spacing=Number(raw.row_spacing);
- const seats=Array.isArray(raw.seats)?raw.seats.slice(0,80).map(s=>({seat_number:String(s.seat_number||"").trim().toUpperCase(),seat_type:["standard","sofa","sleeper_berth"].includes(s.seat_type)?s.seat_type:"standard",row:Number(s.row)||1,col:Number(s.col)||1})):null;
- return {layout,cabin_width:Number.isFinite(width)?Math.max(2.1,Math.min(2.7,width)):2.45,row_spacing:Number.isFinite(spacing)?Math.max(.6,Math.min(1.05,spacing)):.74,interior_color:color(raw.interior_color,"#e5eef0"),seat_color:color(raw.seat_color,"#2e6474"),...(seats?{seats}:{})};
+ const seats=Array.isArray(raw.seats)?raw.seats.slice(0,80).map(s=>({seat_number:String(s.seat_number||"").trim().toUpperCase(),seat_type:["standard","sofa","sleeper_berth"].includes(s.seat_type)?s.seat_type:"standard",row:Number(s.row)||1,col:Number(s.col)||1,deck:Number(s.deck)||1})):null;
+ return {layout,cabin_width:Number.isFinite(width)?Math.max(2.1,Math.min(2.7,width)):2.45,row_spacing:Number.isFinite(spacing)?Math.max(.6,Math.min(1.05,spacing)):.74,interior_color:color(raw.interior_color,"#e5eef0"),seat_color:color(raw.seat_color,"#2e6474"),...(seats?{seats}:{}),...(cleanVehicle(raw.vehicle)?{vehicle:cleanVehicle(raw.vehicle)}:{})};
 }
 export default async function(req,res) {
  const op=await owner(String(req.user.id));

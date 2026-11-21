@@ -41,7 +41,7 @@
   function clearCabin(){while(cabin.children.length){const o=cabin.children.pop();o.traverse?.(x=>{x.geometry?.dispose();if(Array.isArray(x.material))x.material.forEach(m=>m.dispose());else x.material?.dispose()})}seatMap.clear()}
   let seatNormal,seatEdge,seatChosen,seatUnavailable;
   function buildCabin(list){
-   clearCabin();layout=detectLayout(list);const cfg=readConfig(),sleeper=layout==="sleeper-2x1",twoPlusOne=layout!=="coach-2x2";
+   clearCabin();layout=detectLayout(list);const cfg=readConfig(),vehicle=cfg.vehicle||{},deckCount=Number(vehicle.deck_count)||1,sleeper=layout==="sleeper-2x1",twoPlusOne=layout!=="coach-2x2";
    cabinWidth=(Number(cfg.cabin_width)||2.45)*2;rowSpacing=(Number(cfg.row_spacing)||.74)*2;if(sleeper)rowSpacing=Math.max(rowSpacing,1.65);
    const configured=Array.isArray(cfg.seats)?cfg.seats:[],layoutByNumber=new Map(configured.map(s=>[String(s.seat_number),s])),perRow=twoPlusOne?3:4;const placements=list.map((b,i)=>{const saved=layoutByNumber.get(b.textContent.trim());return {b,i,saved,row:Number(saved?.row)||Math.floor(i/perRow)+1,col:Number(saved?.col)||i%perRow+1}});const maxCol=Math.max(1,...placements.map(p=>p.col));rowCount=Math.max(3,...placements.map(p=>p.row));cabinLength=rowCount*rowSpacing+3.5;
    const floor=mat(0x849ca5),wall=mat(cfg.interior_color||"#e5eef0"),dark=mat(0x17394b),glass=new THREE.MeshPhysicalMaterial({color:0x9bd7e2,transparent:true,opacity:.48,roughness:.2});
@@ -49,16 +49,21 @@
    cube(cabin,.16,1.6,cabinLength,wall,-cabinWidth/2,.9,0);cube(cabin,.16,1.6,cabinLength,wall,cabinWidth/2,.9,0);
    cube(cabin,cabinWidth-.1,1.6,.18,dark,0,.9,-cabinLength/2);cube(cabin,cabinWidth-.1,1.6,.18,wall,0,.9,cabinLength/2);
    for(let z=-cabinLength/2+1;z<cabinLength/2-1;z+=2.1){cube(cabin,.035,.7,1.5,glass,-cabinWidth/2+.1,1.2,z);cube(cabin,.035,.7,1.5,glass,cabinWidth/2-.1,1.2,z)}
+   if(deckCount===2){cube(cabin,cabinWidth,.16,cabinLength,mat(0x526d78),0,2.48,0);cube(cabin,.12,.95,cabinLength,wall,-cabinWidth/2,3.02,0);cube(cabin,.12,.95,cabinLength,wall,cabinWidth/2,3.02,0);cube(cabin,cabinWidth,.12,.14,wall,0,3.5,-cabinLength/2);cube(cabin,cabinWidth,.12,.14,wall,0,3.5,cabinLength/2);for(let z=-cabinLength/2+1;z<cabinLength/2;z+=2.2){cube(cabin,.06,.08,.06,mat(0xc4d5d9),-cabinWidth/2+.18,2.95,z);cube(cabin,.06,.08,.06,mat(0xc4d5d9),cabinWidth/2-.18,2.95,z)}}
    cube(cabin,cabinWidth*.76,.18,.4,dark,0,1,-cabinLength/2+.42);cube(cabin,cabinWidth*.72,.95,.08,glass,0,2,-cabinLength/2+.12);
-   cube(cabin,1.1,.65,.6,dark,-1.3,.45,-cabinLength/2+.95);
+   const driverX=vehicle.driver_position==="front_right"?cabinWidth*.29:-cabinWidth*.29;cube(cabin,1.1,.65,.6,dark,driverX,.45,-cabinLength/2+.95);const driverSeat=cube(cabin,.55,.5,.55,mat(0x173f50),driverX,.55,-cabinLength/2+1.35);driverSeat.rotation.x=-.12;const steering=new THREE.Mesh(new THREE.TorusGeometry(.23,.035,10,24),mat(0x263f4a));steering.position.set(driverX,.98,-cabinLength/2+.9);steering.rotation.x=.4;cabin.add(steering);
    const wheel=new THREE.Mesh(new THREE.TorusGeometry(.27,.045,10,28),mat(0x263f4a));wheel.position.set(-1.4,1.2,-cabinLength/2+.72);cabin.add(wheel);
    cube(cabin,cabinWidth*.96,.1,.12,mat(0xa5b9bf),0,2.45,0);
    for(let z=-cabinLength/2+1;z<cabinLength/2;z+=2.5)cube(cabin,.9,.04,.16,mat(0xffedc0),0,2.36,z);
+   const marker=(code,y,color,label)=>{const left=String(code).endsWith("_left"),rear=String(code).startsWith("rear"),mid=String(code).startsWith("mid");const x=left?-cabinWidth/2+.16:cabinWidth/2-.16,z=rear?cabinLength/2-1.1:mid?0:-cabinLength/2+1.25;cube(cabin,.12,.72,.58,mat(color),x,y,z);const tag=makeLabel(label);tag.scale.set(.9,.35,1);tag.position.set(x+(left?.18:-.18),y+.62,z);cabin.add(tag)};
+   (vehicle.doors||[]).forEach(p=>marker(p,.85,0x19a88f,"DOOR"));(vehicle.emergency_exits||[]).forEach(p=>marker(p,.85,0xe0a02b,"EXIT"));
+   if(vehicle.conductor_position&&vehicle.conductor_position!=="none"){const p=vehicle.conductor_position,left=p.endsWith("_left"),z=p.startsWith("mid")?0:-cabinLength/2+1.7;cube(cabin,.48,.65,.48,seatEdge,left?-cabinWidth*.27:cabinWidth*.27,.42,z)}
+   if(deckCount===2){const p=vehicle.stairs||"rear_right",left=p.endsWith("_left"),rear=p.startsWith("rear");for(let n=0;n<5;n++){const step=cube(cabin,.72,.1,.32,mat(0x7b9199),left?-cabinWidth*.3:cabinWidth*.3,.22+n*.38,(rear?1:-1)*(cabinLength*.28-n*.34));step.rotation.x=-.08}}
    seatNormal=mat(cfg.seat_color||"#2e6474");seatEdge=mat(0x173f50);seatChosen=mat(0x08a991);seatUnavailable=mat(0x9baab0);
    const slots=maxCol<=3?[-cabinWidth*.24,-cabinWidth*.10,cabinWidth*.22]:[-cabinWidth*.30,-cabinWidth*.16,cabinWidth*.16,cabinWidth*.30];
    placements.forEach(({b,row,col,saved})=>{
     const x=slots[Math.max(0,Math.min(slots.length-1,col-1))],z=-cabinLength/2+1.9+((row-1)*rowSpacing);
-    const g=new THREE.Group();g.position.set(x,.18,z);g.userData.id=b.dataset.seatId;
+    const deck=Number(saved?.deck)||1;const g=new THREE.Group();g.position.set(x,.18+(deck===2?2.55:0),z);g.userData.id=b.dataset.seatId;
     const seatType=String(saved?.seat_type||b.title||"").toLowerCase(),isBed=sleeper||/sleeper|berth|bed/.test(seatType);
     const w=isBed ? Math.min(.78,cabinWidth*.16) : Math.min(.72,cabinWidth*.145),d=isBed ? rowSpacing*.88 : .74;
     const parts=[];
@@ -78,8 +83,8 @@
     const label=makeLabel(b.textContent.trim());label.scale.set(.48,.24,1);label.position.set(0,isBed ? .82 : .55,d*.48);g.add(label);
     g.userData.parts=parts;g.userData.unavailable=b.disabled;g.userData.selected=false;cabin.add(g);seatMap.set(b.dataset.seatId,g);
    });
-   const badge=document.getElementById("bus3dLayoutName");if(badge)badge.textContent=(sleeper?"Sleeper berths · 2+1":twoPlusOne?"Sofa / deluxe · 2+1":"Coach seats · 2+2")+" · "+(cabinWidth/2).toFixed(2)+"m cabin";
-   const dist=Math.max(11,cabinLength*.92);camera.position.set(dist*.68,dist*.65,dist*.9);controls.target.set(0,1,0);controls.update();
+   const badge=document.getElementById("bus3dLayoutName");if(badge)badge.textContent=(sleeper?"Sleeper berths · 2+1":twoPlusOne?"Sofa / deluxe · 2+1":"Coach seats · 2+2")+" · "+(cabinWidth/2).toFixed(2)+"m cabin · "+deckCount+" deck"+(deckCount===2?"s":"");
+   const dist=Math.max(11,cabinLength*.92);camera.position.set(dist*.68,dist*(deckCount===2?.82:.65),dist*.9);controls.target.set(0,deckCount===2?1.8:1,0);controls.update();
   }
   function sync(){
    const list=buttons();if(!list.length)return;
