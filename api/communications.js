@@ -55,7 +55,8 @@ export default async function(req,res){
   const thread=await db.query("SELECT participant_roles FROM communication_threads WHERE id=$1 AND $2=ANY(participant_user_ids)",[threadId,uid]);
   if(!thread.rows.length)return res.status(404).json({error:"Conversation not found."});
   const roles=parseRoles(thread.rows[0].participant_roles),mine=roles.find(x=>String(x.id)===uid);
-  const message=await db.query("INSERT INTO communication_messages(thread_id,user_id,sender_user_id,sender_role,body) VALUES($1,$2,$2,$3,$4) RETURNING id",[threadId,uid,mine?.role||"participant",body]);
+  const messageGroupId=crypto.randomUUID();
+  const message=await db.query("INSERT INTO communication_messages(message_group_id,thread_id,user_id,sender_user_id,sender_role,body) VALUES($1,$2,$3,$3,$4,$5) RETURNING id",[messageGroupId,threadId,uid,mine?.role||"participant",body]);
   await db.query("UPDATE communication_threads SET updated_at=now() WHERE id=$1",[threadId]);
   return res.status(201).json({message_id:message.rows[0].id,message:"Message sent."});
  }
