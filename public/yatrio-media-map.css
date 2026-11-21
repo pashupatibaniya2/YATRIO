@@ -1,0 +1,26 @@
+/* YATRIO V71 — complete photo library and interactive Nepal map */
+.nepal-map-section,.media-library{margin-top:58px}
+.map-count{display:inline-flex;align-items:center;white-space:nowrap;padding:8px 11px;border-radius:30px;background:#e8f7f4;color:#147d73;font-size:10px;font-weight:800}
+.nepal-map-shell{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:14px;padding:12px;border:1px solid #e2ebee;border-radius:20px;background:#fff;box-shadow:0 16px 42px #102a4310}
+#yatrioNepalMap{height:470px;min-width:0;border-radius:14px;overflow:hidden;background:linear-gradient(145deg,#dcece6,#bdd7d2)}
+.leaflet-container{font-family:"DM Sans",sans-serif}
+.leaflet-popup-content-wrapper{border-radius:12px}
+.yatrio-map-pin{width:19px;height:19px;border:3px solid #fff;border-radius:50%;background:#18a999;box-shadow:0 4px 12px #102a4355}
+.yatrio-map-pin.featured{background:#f2b84b;width:23px;height:23px}
+.map-detail{align-self:stretch;display:flex;flex-direction:column;justify-content:center;padding:20px;border-radius:14px;background:linear-gradient(155deg,#102a43,#174b63 70%,#147d7a);color:#fff;min-height:210px}
+.map-detail-kicker{font-size:9px;letter-spacing:1.7px;font-weight:800;color:#91e4d6}
+.map-detail strong{font:800 22px Manrope,sans-serif;margin:13px 0 8px}
+.map-detail p{font-size:12px;line-height:1.65;color:#d4e6eb;margin:0}
+.map-plan-link{display:inline-flex;align-self:flex-start;margin-top:20px;padding:11px 13px;border-radius:9px;background:#18a999;color:#fff;font-size:11px;font-weight:800}
+.media-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px}
+.media-card{min-width:0;overflow:hidden;border:1px solid #e2ebee;border-radius:15px;background:#fff;box-shadow:0 9px 24px #102a430c;transition:transform .28s ease,box-shadow .28s ease}
+.media-card:hover{transform:translateY(-5px);box-shadow:0 18px 32px #102a431a}
+.media-card img{display:block;width:100%;height:145px;object-fit:cover;background:#e5eeec}
+.media-card-copy{padding:11px 12px 13px}
+.media-card-copy strong{display:block;font:800 12px Manrope,sans-serif;color:#102a43}
+.media-card-copy span{display:block;margin-top:4px;font-size:10px;line-height:1.45;color:#718096}
+.media-note{font-size:11px;line-height:1.6;color:#718096;margin:14px 0 0}
+.media-note a{color:#148779;text-decoration:underline;font-weight:700}
+@media(max-width:950px){.media-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.nepal-map-shell{grid-template-columns:1fr}.map-detail{min-height:170px}}
+@media(max-width:620px){.media-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#yatrioNepalMap{height:360px}.nepal-map-shell{padding:8px}.media-card img{height:120px}.sectionhead{align-items:flex-start}}
+@media(prefers-reduced-motion:reduce){.media-card{transition:none}}

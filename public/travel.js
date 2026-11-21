@@ -28,6 +28,51 @@ async function loadMarketplace(){
   document.getElementById("destinationRegion").addEventListener("change",renderDestinations);
   document.getElementById("destinationChips").addEventListener("click",e=>{const btn=e.target.closest(".destination-chip");if(!btn)return;document.querySelectorAll(".destination-chip").forEach(x=>x.classList.toggle("active",x===btn));renderDestinations()});
   renderDestinations();
+
+  const mediaItems=[
+    {src:"/images/kathmandu.jpg",title:"Kathmandu",type:"Destination photo",alt:"Kathmandu Durbar Square and historic cityscape"},
+    {src:"/images/pokhara.jpg",title:"Pokhara",type:"Destination photo",alt:"Phewa Lake and the Himalayan backdrop in Pokhara"},
+    {src:"/images/chitwan.jpg",title:"Chitwan",type:"Destination photo",alt:"Chitwan National Park landscape"},
+    {src:"/images/lumbini.jpg",title:"Lumbini",type:"Destination photo",alt:"Maya Devi Temple in Lumbini"},
+    {src:"/images/dharan.jpg",title:"Dharan",type:"Destination photo",alt:"Bhedetar and Dharan hill-country view"},
+    {src:"/images/ilam.jpg",title:"Ilam",type:"Destination photo",alt:"Green tea gardens in Ilam"},
+    {src:"/images/janakpur.jpg",title:"Janakpur",type:"Destination photo",alt:"Janaki Mandir in Janakpur"},
+    {src:"/images/biratnagar.jpg",title:"Biratnagar",type:"Destination photo",alt:"Aerial view of Biratnagar"},
+    {src:"/images/fleet-demo-exterior.jpg",title:"Coach exterior",type:"Illustrative fleet demo",alt:"Illustrative intercity bus exterior"},
+    {src:"/images/fleet-demo-interior.jpg",title:"Coach interior",type:"Illustrative fleet demo",alt:"Illustrative intercity coach passenger interior"}
+  ];
+  const mediaGrid=document.getElementById("yatrioMediaGrid");
+  if(mediaGrid) mediaGrid.innerHTML=mediaItems.map(m=>'<a class="media-card" href="'+m.src+'" target="_blank" rel="noopener" aria-label="Open full image: '+esc(m.title)+'"><img src="'+m.src+'" alt="'+esc(m.alt)+'" loading="lazy" decoding="async"><div class="media-card-copy"><strong>'+esc(m.title)+'</strong><span>'+esc(m.type)+'</span></div></a>').join("");
+
+  const mapPlaces={
+    kathmandu:[27.7172,85.3240],pokhara:[28.2096,83.9856],chitwan:[27.5750,84.5000],lumbini:[27.4833,83.2760],
+    dharan:[26.8120,87.2830],ilam:[26.9090,87.9280],janakpur:[26.7288,85.9263],biratnagar:[26.4525,87.2718],
+    bhaktapur:[27.6710,85.4298],lalitpur:[27.6588,85.3247],nagarkot:[27.7170,85.5200],bandipur:[27.9380,84.4060],
+    gorkha:[28.0000,84.6330],jomsom:[28.7800,83.7200],mustang:[29.1800,83.9600],manang:[28.6667,84.0167],
+    lukla:[27.6870,86.7310],"everest-region":[27.8069,86.7140],"rara-lake":[29.5300,82.0800],bardiya:[28.4000,81.3000],
+    "koshi-tappu":[26.5700,87.0000],hetauda:[27.4280,85.0320],tansen:[27.8670,83.5460],nepalgunj:[28.0500,81.6170],
+    dhangadhi:[28.6950,80.5930],bhedetar:[26.9900,87.3300],butwal:[27.7000,83.4500]
+  };
+  function initDestinationMap(){
+    const el=document.getElementById("yatrioNepalMap"),detail=document.getElementById("mapDetail");
+    if(!el||!window.L){if(detail)detail.innerHTML='<strong>Map preview unavailable</strong><p>Destination cards and trip planning are still available below.</p><a class="map-plan-link" href="/plan.html">Open trip planner ↗</a>';return;}
+    const map=L.map(el,{scrollWheelZoom:false,zoomControl:true}).setView([28.25,84.1],6);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}).addTo(map);
+    const bounds=[];
+    data.destinations.forEach(d=>{
+      const point=mapPlaces[d.slug];if(!point)return;bounds.push(point);
+      const icon=L.divIcon({className:"",html:'<span class="yatrio-map-pin '+(["kathmandu","pokhara","lumbini"].includes(d.slug)?"featured":"")+'"></span>',iconSize:[23,23],iconAnchor:[11,11]});
+      const marker=L.marker(point,{icon,title:d.name,alt:"Explore "+d.name}).addTo(map);
+      marker.bindTooltip(esc(d.name),{direction:"top",offset:[0,-8]});
+      marker.on("click",()=>{
+        detail.innerHTML='<span class="map-detail-kicker">'+esc(d.province)+' · NEPAL</span><strong>'+esc(d.name)+'</strong><p>'+esc(d.tagline)+'</p><a class="map-plan-link" href="/plan.html?destination='+encodeURIComponent(d.name)+'">Plan this trip ↗</a>';
+      });
+    });
+    if(bounds.length)map.fitBounds(bounds,{padding:[24,24],maxZoom:7});
+    document.getElementById("mapCount").textContent=bounds.length+" mapped destinations";
+    setTimeout(()=>map.invalidateSize(),250);
+  }
+  initDestinationMap();
 }
 document.getElementById("partnerForm").addEventListener("submit",async e=>{
   e.preventDefault();
