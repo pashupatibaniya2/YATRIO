@@ -187,7 +187,7 @@ function setupActualSpend(){
 }
 function setupTripActions(origin,dest,days,style){
  const root=document.getElementById("tripResult");
- root.addEventListener("click",e=>{const btn=e.target.closest(".wish-btn");if(!btn)return;btn.classList.toggle("active");btn.textContent=btn.classList.contains("active")?"✓ Added":"＋ Wishlist";});
+ root.onclick=e=>{const btn=e.target.closest(".wish-btn");if(!btn)return;btn.classList.toggle("active");btn.textContent=btn.classList.contains("active")?"✓ Added":"＋ Wishlist";};
  document.getElementById("printTripBtn").addEventListener("click",()=>window.print());
  const saveBtn=document.getElementById("saveTripBtn"),shareBtn=document.getElementById("shareTripBtn");
  saveBtn.addEventListener("click",async()=>{
@@ -202,7 +202,7 @@ function setupTripActions(origin,dest,days,style){
    const payload={title,origin,destination:dest,trip_days:days,travel_style:style,itinerary,budget,wishlist,actual_spend:actual};
    if(window.yatrioSavedTripId)payload.id=window.yatrioSavedTripId;
    const r=await fetch("/api/saved-trips",{method:window.yatrioSavedTripId?"PUT":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-   const d=await r.json();if(!r.ok)throw new Error(d.error||"Could not save trip.");
+   const d=await r.json();if(r.status===401){location.href="/login.html?next="+encodeURIComponent(location.pathname+location.search);return;}if(!r.ok)throw new Error(d.error||"Could not save trip.");
    window.yatrioSavedTripId=d.trip.id;saveBtn.textContent="Saved ✓";shareBtn.disabled=false;
   }catch(e){alert(e.message);saveBtn.textContent="Save this trip";}finally{saveBtn.disabled=false;}
  });
@@ -216,7 +216,7 @@ function setupTripActions(origin,dest,days,style){
 async function loadSavedTrip(){
  const id=new URLSearchParams(location.search).get("trip");if(!id)return;
  try{
-  const r=await fetch("/api/saved-trips?id="+encodeURIComponent(id));const d=await r.json();if(!r.ok)throw new Error(d.error||"Could not load saved trip.");
+  const r=await fetch("/api/saved-trips?id="+encodeURIComponent(id));const d=await r.json();if(r.status===401){location.href="/login.html?next="+encodeURIComponent(location.pathname+location.search);return;}if(!r.ok)throw new Error(d.error||"Could not load saved trip.");
   const t=d.trip;window.yatrioSavedTripId=t.id;window.yatrioLoadedWishlist=t.wishlist||[];
   document.getElementById("origin").value=t.origin;document.getElementById("destination").value=t.destination;document.getElementById("days").value=String(Math.min(7,t.trip_days));document.getElementById("style").value=t.travel_style;
   renderPlan(false);

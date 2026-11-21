@@ -34,6 +34,7 @@ export default async function(req,res) {
  }
  const id=String(body.id||"");
  if(!/^[0-9a-f-]{36}$/i.test(id))return res.status(400).json({error:"A valid saved trip is required."});
- const r=await db.query("UPDATE saved_trips SET title=$3,origin=$4,destination=$5,trip_days=$6,travel_style=$7,itinerary=$8::jsonb,budget=$9::jsonb,wishlist=$10::jsonb,actual_spend=$11::jsonb,updated_at=now() WHERE id=$1 AND user_id=$2 RETURNING id,title,origin,destination,trip_days,travel_style,is_shared,created_at,updated_at",[id,userId,title,origin,destination,days,style,itinerary,budget,wishlist,actual]);
+ await db.query("DELETE FROM shared_trip_views WHERE trip_id=$1 AND user_id=$2",[id,userId]);
+ const r=await db.query("UPDATE saved_trips SET title=$3,origin=$4,destination=$5,trip_days=$6,travel_style=$7,itinerary=$8::jsonb,budget=$9::jsonb,wishlist=$10::jsonb,actual_spend=$11::jsonb,is_shared=FALSE,share_token=NULL,updated_at=now() WHERE id=$1 AND user_id=$2 RETURNING id,title,origin,destination,trip_days,travel_style,is_shared,created_at,updated_at",[id,userId,title,origin,destination,days,style,itinerary,budget,wishlist,actual]);
  return r.rows.length?res.json({trip:r.rows[0]}):res.status(404).json({error:"Trip not found."});
 }
