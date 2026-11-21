@@ -142,6 +142,7 @@ async function openSeats(id){
 }
 function renderBusSeats(){
  const grid=document.getElementById("seatGrid");if(!grid)return;
+ currentSeats.sort((a,b)=>String(a.seat_number).localeCompare(String(b.seat_number),undefined,{numeric:true,sensitivity:"base"}));
  const seatButton=s=>'<button type="button" class="seat bus-seat '+(s.display_status!=="available"?"unavailable":"")+'" data-seat-id="'+esc(s.inventory_id)+'" title="'+esc(s.seat_number+" · "+(s.seat_type||"standard")+" · "+s.display_status)+'" aria-label="Seat '+esc(s.seat_number)+", "+esc(s.display_status)+'" aria-pressed="false" '+(s.display_status!=="available"?"disabled":"")+' onclick="toggleSeat(\''+esc(s.inventory_id)+'\')"><span>'+esc(s.seat_number)+'</span></button>';
  const rows=[];for(let i=0;i<currentSeats.length;i+=4){const group=currentSeats.slice(i,i+4);rows.push('<div class="bus-seat-row" aria-label="Seat row '+(Math.floor(i/4)+1)+'">'+seatButton(group[0]||{inventory_id:"",seat_number:"",display_status:"blocked"})+seatButton(group[1]||{inventory_id:"",seat_number:"",display_status:"blocked"})+'<span class="bus-aisle" aria-hidden="true"></span>'+seatButton(group[2]||{inventory_id:"",seat_number:"",display_status:"blocked"})+seatButton(group[3]||{inventory_id:"",seat_number:"",display_status:"blocked"})+'</div>')}
  grid.innerHTML=rows.join("");
