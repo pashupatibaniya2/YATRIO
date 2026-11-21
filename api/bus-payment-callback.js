@@ -24,9 +24,14 @@ export default async function(req,res){
   const provider=String(req.query?.provider||"khalti").toLowerCase();
   if(provider==="esewa"){
     try{
+      const failedUuid=String(req.query?.transaction_uuid||"");
+      if(req.query?.failed==="1"&&failedUuid){
+        const failed=await db.query("UPDATE payment_transactions SET status='cancelled',failure_reason='Provider return failure',updated_at=now() WHERE booking_type='bus' AND provider='esewa' AND provider_payment_id=$1 AND status<>'succeeded' RETURNING booking_ref",[failedUuid]);
+        return res.redirect(go("cancelled",failed.rows[0]?.booking_ref||""));
+      }
       const encoded=String(req.query?.data||"");
       if(!encoded||encoded.length>12000) return res.redirect(go("invalid",""));
-      const raw=atob(encoded.replace(/-/g,"+").replace(/_/g,"/"));
+      const raw=atob(encoded.replace(/ /g,"+").replace(/-/g,"+").replace(/_/g,"/"));
       const response=JSON.parse(decodeURIComponent(Array.from(raw,c=>"%"+c.charCodeAt(0).toString(16).padStart(2,"0")).join("")));
       const uuid=String(response.transaction_uuid||"");
       const found=await db.query("SELECT id,booking_id,booking_ref,user_id,amount,amount_paisa,purchase_order_id,status,provider FROM payment_transactions WHERE booking_type='bus' AND provider='esewa' AND provider_payment_id=$1 LIMIT 1",[uuid]);
@@ -37,6 +42,8 @@ export default async function(req,res){
       if(!secret||!product) return res.redirect(go("verify-later",payment.booking_ref));
       if(response.product_code!==product||response.status!=="COMPLETE"||!response.signed_field_names||!response.signature) return res.redirect(go("pending",payment.booking_ref));
       const names=String(response.signed_field_names).split(",");
+      const required=["transaction_code","status","total_amount","transaction_uuid","product_code","signed_field_names"];
+      if(required.some(name=>!names.includes(name))) return res.redirect(go("review",payment.booking_ref));
       const message=names.map(name=>name+"="+String(response[name]??"")).join(",");
       const expected=await hmacBase64(secret,message);
       if(!same(expected,String(response.signature))) {

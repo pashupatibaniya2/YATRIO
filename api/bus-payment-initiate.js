@@ -51,7 +51,7 @@ export default async function(req,res) {
     }
     if(provider==="esewa") {
       const transactionUuid=orderId;
-      const fields={amount:amount.toFixed(2),tax_amount:"0",total_amount:amount.toFixed(2),transaction_uuid:transactionUuid,product_code:String(configValues.product),product_service_charge:"0",product_delivery_charge:"0",success_url:SITE+"/api/bus-payment-callback?provider=esewa",failure_url:SITE+"/my-trips.html?payment=failed",signed_field_names:"total_amount,transaction_uuid,product_code"};
+      const fields={amount:amount.toFixed(2),tax_amount:"0",total_amount:amount.toFixed(2),transaction_uuid:transactionUuid,product_code:String(configValues.product),product_service_charge:"0",product_delivery_charge:"0",success_url:SITE+"/api/bus-payment-callback?provider=esewa",failure_url:SITE+"/api/bus-payment-callback?provider=esewa&failed=1&transaction_uuid="+encodeURIComponent(transactionUuid),signed_field_names:"total_amount,transaction_uuid,product_code"};
       fields.signature=await hmacBase64(configValues.secret,"total_amount="+fields.total_amount+",transaction_uuid="+transactionUuid+",product_code="+fields.product_code);
       await db.transaction([
         {sql:"UPDATE payment_transactions SET provider_payment_id=$1,checkout_url=$2,expires_at=now()+interval '20 minutes',status='pending',provider_payload=$3::jsonb,updated_at=now() WHERE id=$4",params:[transactionUuid,ESEWA_URL,JSON.stringify({product_code:fields.product_code}),paymentId]},
