@@ -2,12 +2,18 @@ import { db } from "hatchable";
 export const access = "user";
 export const methods = ["GET","POST","PUT"];
 async function owner(uid){return (await db.query("SELECT o.id,o.status FROM operators o JOIN operator_users ou ON ou.operator_id=o.id WHERE ou.user_id=$1 LIMIT 1",[uid])).rows[0]}
+function cleanExterior(v){
+ if(!v||typeof v!=="object")return undefined;
+ const color=(x,f)=>/^#[0-9a-f]{6}$/i.test(String(x||""))?String(x).toLowerCase():f;
+ const pick=(x,a,f)=>a.includes(String(x))?String(x):f;
+ return {body_style:pick(v.body_style,["standard_coach","high_deck","tourist","sleeper"],"standard_coach"),primary_color:color(v.primary_color,"#f3f6f7"),secondary_color:color(v.secondary_color,"#176b87"),trim_color:color(v.trim_color,"#18a999"),window_tint:pick(v.window_tint,["clear","light","dark"],"light"),headlight_style:pick(v.headlight_style,["modern","classic","led"],"led"),wheel_style:pick(v.wheel_style,["standard","alloy","premium"],"alloy"),luggage_bays:v.luggage_bays!==false,brand_text:String(v.brand_text||"YATRIO").replace(/[<>]/g,"").trim().slice(0,32)};
+}
 function cleanVehicle(v){
  if(!v||typeof v!=="object")return undefined;
  const valid=["front_left","front_right","mid_left","mid_right","rear_left","rear_right","none"];
  const pos=x=>valid.includes(String(x))?String(x):"none";
  const list=(x,fallback)=>Array.isArray(x)?[...new Set(x.map(pos).filter(p=>p!=="none"))].slice(0,4):fallback;
- return {deck_count:Number(v.deck_count)===2?2:1,driver_position:["front_left","front_right"].includes(v.driver_position)?v.driver_position:"front_left",conductor_position:pos(v.conductor_position),stairs:pos(v.stairs)==="none"?"rear_right":pos(v.stairs),doors:list(v.doors,["mid_left","front_right"]),emergency_exits:list(v.emergency_exits,["rear_left","rear_right"])};
+ return {deck_count:Number(v.deck_count)===2?2:1,driver_position:["front_left","front_right"].includes(v.driver_position)?v.driver_position:"front_left",conductor_position:pos(v.conductor_position),stairs:pos(v.stairs)==="none"?"rear_right":pos(v.stairs),doors:list(v.doors,["mid_left","front_right"]),emergency_exits:list(v.emergency_exits,["rear_left","rear_right"]),...(cleanExterior(v.exterior)?{exterior:cleanExterior(v.exterior)}:{})};
 }
 function cleanLayoutConfig(input,type){
  const raw=input&&typeof input==="object"?input:{};
