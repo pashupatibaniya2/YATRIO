@@ -60,7 +60,7 @@ export default async function(req,res) {
       SELECT $1,$2,$3,$4,$5,$6,$7,$8,$9,$10::date,$11
       WHERE EXISTS (SELECT 1 FROM operator_acquisition_targets WHERE province=$5 AND district=$6)
       RETURNING id,business_name,contact_name,phone,email,province,district,status,source,campaign,notes,next_follow_up_at,created_at`,
-      [business,contact,phone,email,province,district,source,campaign,notes,follow||null,String(req.user.id)]);
+      [business,contact,phone,email,province,district,source,campaign,notes,follow||null,String(req.member?.id||"admin")]);
     if(!result.rows.length) return res.status(400).json({error:"Select a district that belongs to the chosen province."});
     return res.status(201).json({lead:result.rows[0]});
   }
