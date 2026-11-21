@@ -35,7 +35,7 @@ read = "public"
 write = "public"
 
 [db.tables.marketplace_bookings]
-read = "own"
+read = "public"
 write = "public"
 
 [db.tables.marketplace_provider_bookings]
@@ -59,20 +59,20 @@ read = "own"
 write = "own"
 
 [db.tables.booking_notifications]
-read = "own"
-write = "own"
+read = "public"
+write = "public"
 
 [db.tables.communication_threads]
-read = "own"
-write = "own"
+read = "public"
+write = "public"
 
 [db.tables.communication_thread_members]
 read = "own"
 write = "own"
 
 [db.tables.communication_messages]
-read = "own"
-write = "own"
+read = "public"
+write = "public"
 
 [db.tables.support_tickets]
 read = "own"
