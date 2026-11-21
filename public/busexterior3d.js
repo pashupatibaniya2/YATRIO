@@ -2,8 +2,9 @@
 (async function(){
  const canvas=document.getElementById("busExteriorCanvas"),status=document.getElementById("busExterior3DStatus");if(!canvas)return;
  let THREE,OrbitControls,renderer,scene,camera,controls,bus=null;
- const defaults={body_style:"standard_coach",primary_color:"#f3f6f7",secondary_color:"#176b87",trim_color:"#18a999",window_tint:"light",headlight_style:"led",wheel_style:"alloy",luggage_bays:true,brand_text:"YATRIO"};
- const read=()=>{const v={};document.querySelectorAll("[data-exterior]").forEach(el=>v[el.dataset.exterior]=el.type==="checkbox"?el.checked:el.value);return {...defaults,...v}};
+ const defaults={body_style:"standard_coach",primary_color:"#f3f6f7",secondary_color:"#176b87",trim_color:"#18a999",window_tint:"light",headlight_style:"led",wheel_style:"alloy",luggage_bays:true,brand_text:"YATRIO",logo_url:null};
+ let currentLogoUrl=null;
+ const read=()=>{const v={};document.querySelectorAll("[data-exterior]").forEach(el=>v[el.dataset.exterior]=el.type==="checkbox"?el.checked:el.value);return {...defaults,...v,logo_url:currentLogoUrl}};
  const color=v=>/^#[0-9a-f]{6}$/i.test(String(v||""))?v:"#f3f6f7";
  try{
   THREE=await import("https://esm.sh/three@0.161.0");({OrbitControls}=await import("https://esm.sh/three@0.161.0/examples/jsm/controls/OrbitControls.js"));
@@ -15,6 +16,12 @@
   const box=(p,w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;p.add(o);return o};
   function rounded(p,w,h,d,m,x,y,z,r=.12){const sh=new THREE.Shape();sh.moveTo(-w/2+r,-h/2);sh.lineTo(w/2-r,-h/2);sh.quadraticCurveTo(w/2,-h/2,w/2,-h/2+r);sh.lineTo(w/2,h/2-r);sh.quadraticCurveTo(w/2,h/2,w/2-r,h/2);sh.lineTo(-w/2+r,h/2);sh.quadraticCurveTo(-w/2,h/2,-w/2,h/2-r);sh.lineTo(-w/2,-h/2+r);sh.quadraticCurveTo(-w/2,-h/2,-w/2+r,-h/2);const g=new THREE.ExtrudeGeometry(sh,{depth:d,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.045,bevelThickness:.045});const o=new THREE.Mesh(g,m);o.position.set(x,y,z);p.add(o);return o}
   function label(parent,t){if(!t)return;const c=document.createElement("canvas");c.width=512;c.height=128;const ctx=c.getContext("2d");ctx.fillStyle="#fff";ctx.font="800 62px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(String(t).slice(0,32),256,64);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;const plane=new THREE.Mesh(new THREE.PlaneGeometry(2.5,.62),new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide}));plane.position.set(0,2.02,.01);parent.add(plane);const other=plane.clone();other.position.z=-.01;other.rotation.y=Math.PI;parent.add(other);const left=plane.clone();left.position.set(-1.29,1.48,0);left.rotation.y=-Math.PI/2;parent.add(left);const right=plane.clone();right.position.set(1.29,1.48,0);right.rotation.y=Math.PI/2;parent.add(right)}
+  let logoGroup=null;
+  function addLogo(url,width,length){
+   if(logoGroup&&bus)bus.remove(logoGroup);logoGroup=null;if(!url)return;
+   const group=new THREE.Group();logoGroup=group;bus.add(group);
+   new THREE.TextureLoader().load(url,texture=>{if(logoGroup!==group||!bus)return;texture.colorSpace=THREE.SRGBColorSpace;const material=new THREE.MeshBasicMaterial({map:texture,transparent:true,side:THREE.DoubleSide,depthWrite:false});for(const side of [-1,1]){const plane=new THREE.Mesh(new THREE.PlaneGeometry(1.05,.48),material);plane.position.set(side*(width/2+.055),1.08,0);plane.rotation.y=side>0?Math.PI/2:-Math.PI/2;group.add(plane)}const front=new THREE.Mesh(new THREE.PlaneGeometry(.62,.34),material);front.position.set(0,1.42,length/2+.13);group.add(front)},undefined,err=>console.warn("Vehicle logo texture failed to load",err));
+  }
   function build(cfg){
    if(bus){scene.remove(bus);bus.traverse(o=>{o.geometry?.dispose();if(o.material){if(Array.isArray(o.material))o.material.forEach(m=>m.dispose());else o.material.dispose()}})}
    bus=new THREE.Group();scene.add(bus);const high=cfg.body_style==="high_deck"||cfg.body_style==="sleeper",length=cfg.body_style==="sleeper"?8.8:10.2,height=high?3.15:2.75,width=2.55;
@@ -32,11 +39,11 @@
    for(const side of [-1,1]){box(bus,.34,.19,.06,lamp,side*.72,.58,length/2+.1);box(bus,.12,.08,.07,trim,side*.98,.87,length/2+.1);box(bus,.12,.12,.48,dark,side*(width/2+.2),height-1.03,length/2-.22);if(cfg.luggage_bays!==false)for(let i=0;i<3;i++){const z=-length*.25+i*length*.25;box(bus,.035,.42,1.25,trim,side*(width/2+.035),.39,z);box(bus,.045,.035,.16,dark,side*(width/2+.06),.43,z+.47)}for(let i=0;i<5;i++)box(bus,.045,.06,.12,lamp,side*(width/2+.035),.79,-length*.35+i*length*.17)}
    box(bus,.78,.28,.06,dark,0,.94,length/2+.11);for(let i=0;i<5;i++)box(bus,.06,.2,.025,metal,-.28+i*.14,.94,length/2+.15);
    for(const side of [-1,1]){box(bus,.25,.62,.055,mat("#c94d42"),side*.94,1,-length/2-.08);box(bus,.18,.12,.06,lamp,side*.94,.62,-length/2-.08)}
-   label(bus,cfg.brand_text||"YATRIO");bus.rotation.y=-.28;controls.target.set(0,height*.55,0);camera.position.set(8,height*2,11);controls.update();
+   label(bus,cfg.brand_text||"YATRIO");addLogo(cfg.logo_url,width,length);bus.rotation.y=-.28;controls.target.set(0,height*.55,0);camera.position.set(8,height*2,11);controls.update();
   }
   const resize=()=>{const r=canvas.getBoundingClientRect();if(!r.width||!r.height)return;renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix()};new ResizeObserver(resize).observe(canvas);resize();
   document.querySelectorAll("[data-exterior]").forEach(el=>el.addEventListener("input",()=>build(read())));
-  window.YatrioExterior3D={setConfig(cfg){const v={...defaults,...(cfg||{})};document.querySelectorAll("[data-exterior]").forEach(el=>{if(Object.hasOwn(v,el.dataset.exterior)){if(el.type==="checkbox")el.checked=!!v[el.dataset.exterior];else el.value=v[el.dataset.exterior]}});build(read())},getConfig:read,reset(){this.setConfig(defaults)}};
+  window.YatrioExterior3D={setConfig(cfg){const v={...defaults,...(cfg||{})};currentLogoUrl=v.logo_url||null;document.querySelectorAll("[data-exterior]").forEach(el=>{if(Object.hasOwn(v,el.dataset.exterior)){if(el.type==="checkbox")el.checked=!!v[el.dataset.exterior];else el.value=v[el.dataset.exterior]}});build(read())},getConfig:read,setLogo(url){currentLogoUrl=url||null;build(read())},reset(){this.setConfig(defaults)}};
   build(read());function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}animate();status.textContent="Interactive 3D exterior ready · drag to orbit · scroll to zoom.";
  }catch(e){console.warn("Exterior preview unavailable",e);if(status)status.textContent="3D preview is unavailable on this device; customization settings can still be saved."}
 })();

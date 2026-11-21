@@ -1,4 +1,4 @@
-import { db } from "hatchable";
+import { db, storage } from "hatchable";
 export const access="user";
 export const methods=["GET","PUT"];
 const choices=new Set(["front_left","front_right","mid_left","mid_right","rear_left","rear_right","front","rear","none"]);
@@ -25,8 +25,8 @@ export default async function(req,res){
  const bus=(await db.query("SELECT id,capacity,seat_layout_config FROM buses WHERE id=$1 AND operator_id=$2",[busId,op.id])).rows[0];
  if(!bus)return res.status(404).json({error:"Bus not found in your operator account."});
  const config=bus.seat_layout_config||{};
- if(req.method==="GET")return res.json({bus_id:bus.id,vehicle:clean(config.vehicle),deck_count:Number(config.vehicle?.deck_count)||1,exterior:cleanExterior(config.vehicle?.exterior)});
- const vehicle=clean(req.body?.vehicle),seats=Array.isArray(config.seats)?config.seats:[];
+ if(req.method==="GET"){const key=config.vehicle?.exterior?.logo_storage_key;let logo_url=null;if(key){try{logo_url=await storage.url(key)}catch(e){console.warn("Vehicle logo URL unavailable.")}}return res.json({bus_id:bus.id,vehicle:clean(config.vehicle),deck_count:Number(config.vehicle?.deck_count)||1,exterior:cleanExterior(config.vehicle?.exterior),logo_url});}
+ const vehicle=clean(req.body?.vehicle);vehicle.exterior.logo_storage_key=config.vehicle?.exterior?.logo_storage_key||null;const seats=Array.isArray(config.seats)?config.seats:[];
  if(seats.some(s=>Number(s.deck||1)>vehicle.deck_count))return res.status(409).json({error:"This bus has seats assigned to the upper deck. Move those seats to deck 1 before switching to a single-deck configuration."});
  await db.query("UPDATE buses SET seat_layout_config=$1::jsonb WHERE id=$2 AND operator_id=$3",[JSON.stringify({...config,vehicle}),busId,op.id]);
  return res.json({message:"Fleet configuration saved. The 3D cabin will use these vehicle features.",vehicle});
