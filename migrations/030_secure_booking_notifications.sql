@@ -2,7 +2,7 @@ CREATE OR REPLACE FUNCTION get_booking_notification_context(p_user_id text,p_boo
 RETURNS TABLE(recipient_email text,booking_updates boolean)
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = app_4d9282204bbb3288, public
 AS $$
 DECLARE
  v_owner text;
@@ -28,7 +28,7 @@ CREATE OR REPLACE FUNCTION record_booking_notification(p_user_id text,p_booking_
 RETURNS uuid
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = app_4d9282204bbb3288, public
 AS $$
 DECLARE
  v_owner text;
@@ -54,7 +54,7 @@ CREATE OR REPLACE FUNCTION update_booking_notification_email(p_id uuid,p_status 
 RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = app_4d9282204bbb3288, public
 AS $$
 BEGIN
  IF p_status NOT IN ('sent','failed','skipped','not_attempted') THEN RAISE EXCEPTION 'Invalid email status' USING ERRCODE='22023'; END IF;
