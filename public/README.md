@@ -76,7 +76,8 @@ Remote Himalayan and protected-area destinations can require flights, permits, g
 
 ## 6. Visual assets and media policy
 
-- Local destination image assets currently live in `public/images/`.
+- Local destination image assets currently live in `public/images/`; the gallery now includes 11 destination/location images plus two illustrative fleet images (13 total gallery items).
+- Added Rara Lake (Supermaanis), Khaptad National Park (Dwellers) and Api Himal (Mahendra177), sourced from Wikimedia Commons under CC BY-SA 4.0; their attribution and licence links are listed at `/image-credits.html`.
 - Fleet demo images are illustrative and must never be represented as an actual partner's vehicle.
 - Destination images are inspiration; where a specific local photo is not available, the interface may use a neutral visual treatment rather than claim an unrelated image depicts that exact place.
 - Operator-uploaded fleet photographs are not public until approved through moderation.
