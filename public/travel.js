@@ -7,6 +7,7 @@ async function loadMarketplace(){
   if(!r.ok) throw new Error(data.error || "Marketplace could not load");
   document.getElementById("categories").innerHTML = data.categories.map(c => '<a class="cat cat-'+esc(c.slug)+'" href="'+(c.slug==="buses"?"/":"/explore.html?category="+c.slug)+'"><div class="catphoto" aria-hidden="true"></div><div class="caticon">'+(icons[c.slug]||"✦")+'</div><h3>'+esc(c.name)+'</h3><p>'+esc(c.description)+'</p><span class="catfoot">'+(c.slug==="buses"?"SEARCH BUS JOURNEYS →":"PARTNER NETWORK OPEN · "+c.verified_providers+" VERIFIED")+'</span></a>').join("");
   const destinationPhotos={kathmandu:"/images/kathmandu.jpg",pokhara:"/images/pokhara.jpg",chitwan:"/images/chitwan.jpg",lumbini:"/images/lumbini.jpg",dharan:"/images/dharan.jpg",ilam:"/images/ilam.jpg",janakpur:"/images/janakpur.jpg",biratnagar:"/images/biratnagar.jpg"};
+  const provincePhotos={Bagmati:"/images/kathmandu.jpg",Gandaki:"/images/pokhara.jpg",Koshi:"/images/ilam.jpg",Madhesh:"/images/janakpur.jpg",Lumbini:"/images/lumbini.jpg"};
   window.yatrioDestinations=data.destinations;
   const mountainNames=["nagarkot","bandipur","gorkha","jomsom","mustang","manang","lukla","everest-region","rara-lake","bhedetar","ilam"];
   const heritageNames=["kathmandu","bhaktapur","lalitpur","janakpur","lumbini","gorkha","tansen"];
@@ -20,8 +21,8 @@ async function loadMarketplace(){
     document.getElementById("destinationCount").textContent=filtered.length+" destinations to explore";
     document.getElementById("destinationEmpty").hidden=filtered.length>0;
     document.getElementById("destinationsGrid").innerHTML=filtered.map((d,i)=>{
-      const photo=destinationPhotos[d.slug],kind=destinationType(d),photoStyle=photo?' style="--dest-photo:url(&quot;'+photo+'&quot;)"':'';
-      return '<article class="dest destination-card" data-yatrio-reveal style="--yr-delay:'+(Math.min(i,8)*45)+'ms"><div class="destart scene-'+kind+(photo?' photo-dest':'')+'"'+photoStyle+'><span class="scenic-label">'+kind.toUpperCase()+' · NEPAL</span><span class="dest-photo-shade"></span><span class="dest-photo-caption">'+esc(d.name)+'<small>'+esc(d.province)+' · NEPAL</small></span><span class="dest-orbit" aria-hidden="true">✦</span></div><div class="destbody"><h3>'+esc(d.name)+'</h3><p>'+esc(d.tagline)+'</p><div class="tags">'+(d.highlights||[]).slice(0,3).map(x=>'<span class="tag">'+esc(x)+'</span>').join("")+'</div><a class="destination-plan-link" href="/plan.html?destination='+encodeURIComponent(d.name)+'">Plan this trip <span>↗</span></a></div></article>';
+      const exactPhoto=destinationPhotos[d.slug],photo=exactPhoto||provincePhotos[d.province],kind=destinationType(d),photoStyle=photo?' style="--dest-photo:url(&quot;'+photo+'&quot;)"':'';
+      return '<article class="dest destination-card" data-yatrio-reveal style="--yr-delay:'+(Math.min(i,8)*45)+'ms"><div class="destart scene-'+kind+(photo?' photo-dest':'')+'"'+photoStyle+'><span class="scenic-label">'+(exactPhoto?'DESTINATION PHOTO':photo?'REGIONAL PHOTO':kind.toUpperCase()+' · NEPAL')+'</span><span class="dest-photo-shade"></span><span class="dest-photo-caption">'+esc(d.name)+'<small>'+esc(d.province)+' · NEPAL'+(exactPhoto?'':photo?' · REGIONAL INSPIRATION':'')+'</small></span><span class="dest-orbit" aria-hidden="true">✦</span></div><div class="destbody"><h3>'+esc(d.name)+'</h3><p>'+esc(d.tagline)+'</p><div class="tags">'+(d.highlights||[]).slice(0,3).map(x=>'<span class="tag">'+esc(x)+'</span>').join("")+'</div><a class="destination-plan-link" href="/plan.html?destination='+encodeURIComponent(d.name)+'">Plan this trip <span>↗</span></a></div></article>';
     }).join("");
   }
   document.getElementById("destinationSearch").addEventListener("input",renderDestinations);
@@ -51,7 +52,16 @@ async function loadMarketplace(){
     gorkha:[28.0000,84.6330],jomsom:[28.7800,83.7200],mustang:[29.1800,83.9600],manang:[28.6667,84.0167],
     lukla:[27.6870,86.7310],"everest-region":[27.8069,86.7140],"rara-lake":[29.5300,82.0800],bardiya:[28.4000,81.3000],
     "koshi-tappu":[26.5700,87.0000],hetauda:[27.4280,85.0320],tansen:[27.8670,83.5460],nepalgunj:[28.0500,81.6170],
-    dhangadhi:[28.6950,80.5930],bhedetar:[26.9900,87.3300],butwal:[27.7000,83.4500]
+    dhangadhi:[28.6950,80.5930],bhedetar:[26.9900,87.3300],butwal:[27.7000,83.4500],
+    dhulikhel:[27.6220,85.5420],panauti:[27.5840,85.5160],kirtipur:[27.6780,85.2770],pharping:[27.6120,85.2640],
+    ghandruk:[28.3750,83.8060],ghorepani:[28.4000,83.6900],besisahar:[28.2310,84.3760],damauli:[27.9760,84.2700],
+    kanyam:[26.8790,88.0710],birtamod:[26.6460,87.9940],itahari:[26.6630,87.2740],phidim:[27.1450,87.7670],
+    taplejung:[27.3540,87.6700],pathibhara:[27.4300,87.7700],bardibas:[26.9840,85.9190],jaleshwar:[26.6480,85.8000],
+    malangwa:[26.8580,85.5600],gaur:[26.7650,85.2780],tilaurakot:[27.5740,83.0520],ramgram:[27.5300,83.6670],
+    devdaha:[27.6350,83.5160],kapilvastu:[27.5500,83.0500],swargadwari:[28.0800,82.7400],jumla:[29.2750,82.1830],
+    "sinja-valley":[29.2750,82.0000],"shey-phoksundo":[29.2000,82.9500],dolpo:[29.0000,82.8000],simikot:[29.9670,81.8180],
+    khaptad:[29.2500,81.1000],dadeldhura:[29.3000,80.5800],tikapur:[28.5280,81.1170],shuklaphanta:[28.8500,80.2500],
+    "api-nampa":[29.8500,80.7000],doti:[29.2600,80.9400]
   };
   function initDestinationMap(){
     const el=document.getElementById("yatrioNepalMap"),detail=document.getElementById("mapDetail");
@@ -69,7 +79,7 @@ async function loadMarketplace(){
       });
     });
     if(bounds.length)map.fitBounds(bounds,{padding:[24,24],maxZoom:7});
-    document.getElementById("mapCount").textContent=bounds.length+" mapped destinations";
+    document.getElementById("mapCount").textContent=bounds.length+" mapped destinations · all seven provinces";
     setTimeout(()=>map.invalidateSize(),250);
   }
   initDestinationMap();

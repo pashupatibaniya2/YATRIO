@@ -118,11 +118,12 @@ function renderPlan(shouldScroll){
   const dest=destination.value;
   const days=Math.max(2,Math.min(7,Number(document.getElementById("days").value)||3));
   const style=document.getElementById("style").value;
-  const data=plans[dest];
-  const items=data[style];
+  const genericDays=[['Arrive and get oriented','Arrive in '+dest+' and check local transport, accommodation and visitor information with your host.','Arrival and local orientation'],['Explore local highlights','Choose a locally recommended cultural, nature or heritage stop and confirm access before setting out.','Local discovery'],['Flexible departure day','Leave time for a relaxed breakfast, a final local stop and your onward journey.','Flexible finish']];
+  const data=plans[dest]||{image:'',region:'Nepal',intro:'A flexible starting point for discovering '+dest+' and its surrounding communities. Confirm local access, seasonal conditions and travel arrangements before departure.',balanced:genericDays,nature:genericDays,culture:genericDays,relaxed:genericDays};
+  const items=data[style]||data.balanced;
   const selected=[];
   const extraDays=extensions[dest]||genericExtensions[dest]||[];
-  for(let i=0;i<days;i++) selected.push(i<items.length?items[i]:extraDays[(i-items.length)%extraDays.length]);
+  for(let i=0;i<days;i++) selected.push(i<items.length?items[i]:(extraDays.length?extraDays[(i-items.length)%extraDays.length]:items[i%items.length]));
   const label=style==="nature"?"Nature & outdoors":style==="culture"?"Culture & heritage":style==="relaxed"?"Slow & relaxed":"A little of everything";
   const photo=data.image ? "background-image:linear-gradient(90deg,#102a4310,#102a4366),url('"+data.image+"')" : "background-image:linear-gradient(135deg,#174b63,#18a999)";
   const daysHtml=selected.map((item,i)=>'<article class="day" style="animation-delay:'+(i*.06)+'s"><div class="day-number">D'+(i+1)+'</div><div><h3>'+esc(item[0])+'</h3><p>'+esc(item[1])+'</p><small>'+esc(item[2])+'</small></div></article>').join("");
