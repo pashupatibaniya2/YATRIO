@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pilot Launch QA Centre · YATRIO</title>
+<style>
+:root{--navy:#102a43;--teal:#138879;--ink:#203647;--muted:#647987;--line:#e0e9ed;--bg:#f4f8fa;--green:#13795b;--amber:#986515;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+header{background:var(--navy);color:white;padding:17px max(20px,calc((100vw - 1160px)/2));display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand{font-weight:850;font-size:20px;letter-spacing:-.4px}.brand span{background:var(--teal);padding:5px 9px;border-radius:8px;margin-right:8px}
+header a{color:#d7e9ef;text-decoration:none;font-size:13px;font-weight:650}
+main{max-width:1160px;margin:28px auto;padding:0 20px 50px}.intro{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+h1{margin:0;color:var(--navy);font-size:30px;letter-spacing:-.8px}.sub{color:var(--muted);max-width:720px;margin:7px 0 0}
+.actions{display:flex;gap:9px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:9px;border:1px solid var(--line);background:white;color:var(--navy);text-decoration:none;font-weight:750;font-size:13px;cursor:pointer}.btn.primary{background:var(--teal);border-color:var(--teal);color:white}
+.banner{margin:20px 0;padding:15px 17px;border:1px solid #ead9b5;background:#fff9ec;border-radius:13px;color:#73551c}.banner strong{display:block;color:#65470f;margin-bottom:3px}
+.metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:20px 0}.metric,.panel,.stage{background:white;border:1px solid var(--line);border-radius:14px;box-shadow:0 4px 15px #102a4307}
+.metric{padding:15px}.metric small{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.7px;font-weight:800}.metric b{display:block;color:var(--navy);font-size:28px;margin-top:3px}
+.section-title{font-size:18px;color:var(--navy);margin:27px 0 12px}.stages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.stage{padding:17px;display:flex;gap:13px;align-items:flex-start}.number{width:30px;height:30px;flex:0 0 30px;border-radius:9px;background:#edf3f5;color:#4e6877;display:grid;place-items:center;font-weight:850}
+.stage h3{font-size:15px;margin:0 0 3px;color:var(--navy)}.stage p{font-size:13px;color:var(--muted);margin:0 0 10px}.status{display:inline-flex;border-radius:20px;padding:4px 9px;font-size:11px;font-weight:850;background:#f1f4f5;color:#61727d}.status.ready{background:#e7f5ef;color:var(--green)}.status.blocked{background:#fff4df;color:var(--amber)}.status.review{background:#edf3f8;color:#47647b}
+.panel{padding:18px;margin-top:18px}.panel h2{font-size:17px;margin:0 0 12px;color:var(--navy)}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid #edf1f3;vertical-align:top}th{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}td strong{color:var(--navy)}
+.note{color:var(--muted);font-size:12px;margin:10px 0 0}.error{padding:15px;background:#fff0ef;color:var(--red);border-radius:10px}
+footer{color:var(--muted);font-size:12px;margin:20px 0}
+@media(max-width:850px){.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){main{padding:0 14px 35px;margin-top:20px}h1{font-size:25px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.stages{grid-template-columns:1fr}.metric b{font-size:24px}.panel{overflow-x:auto}header{padding:14px 16px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="brand"><span>Y</span>YATRIO <small style="font-weight:500;color:#c8dbe2">· Pilot Launch QA</small></div><a href="/admin-verified-operators.html">← Operator Control Centre</a></header>
+<main>
+<div class="intro"><div><h1>Controlled Pilot Readiness</h1><p class="sub">A live operational checklist for launching the first genuine bus operator and passenger journey. Every metric comes from the production database; demo data is never counted as real readiness.</p></div><div class="actions"><button class="btn" id="refresh" type="button">↻ Refresh checks</button><a class="btn primary" href="/admin-verified-operators.html">Verify operators</a></div></div>
+<div id="alert" class="banner"><strong>Loading live readiness data…</strong>Please wait while the admin-only readiness service is checked.</div>
+<div class="metrics" id="metrics">
+<div class="metric"><small>Operators approved</small><b>—</b></div><div class="metric"><small>Documents approved</small><b>—</b></div><div class="metric"><small>Active buses</small><b>—</b></div><div class="metric"><small>Future departures</small><b>—</b></div><div class="metric"><small>Successful payments</small><b>—</b></div>
+</div>
+<h2 class="section-title">Pilot launch stages</h2>
+<div class="stages" id="stages">
+<div class="stage"><div class="number">1</div><div><h3>Operator verification</h3><p>Register a genuine operator and approve all four required business documents.</p><span class="status review">Checking</span></div></div>
+<div class="stage"><div class="number">2</div><div><h3>Bus and fleet evidence</h3><p>Activate a real bus and approve its actual fleet photos.</p><span class="status review">Checking</span></div></div>
+<div class="stage"><div class="number">3</div><div><h3>Publish a real departure</h3><p>Create a future scheduled journey using an active bus and route.</p><span class="status review">Checking</span></div></div>
+<div class="stage"><div class="number">4</div><div><h3>Driver assignment</h3><p>Assign an eligible driver to the first published departure.</p><span class="status review">Checking</span></div></div>
+<div class="stage"><div class="number">5</div><div><h3>Passenger booking and payment</h3><p>Complete a real booking and verify its payment through the provider callback.</p><span class="status review">Checking</span></div></div>
+<div class="stage"><div class="number">6</div><div><h3>Cancellation and refund exercise</h3><p>Test cancellation rules, approval, provider refund reference and seat release.</p><span class="status blocked">Requires live test</span></div></div>
+</div>
+<section class="panel"><h2>Operator-by-operator readiness</h2><div id="operators"><p class="note">Loading operator records…</p></div><p class="note">Four approved documents are required for operator verification. Fleet photos must be approved before public display. Only active buses and future scheduled departures are discoverable.</p></section>
+<section class="panel"><h2>Operational test links</h2><div class="actions">
+<a class="btn" href="/admin-verified-operators.html">Operator verification</a><a class="btn" href="/admin-bus-images.html">Fleet photo review</a><a class="btn" href="/admin-payments.html">Payment reconciliation</a><a class="btn" href="/admin-cancellations.html">Cancellation reviews</a><a class="btn" href="/operator.html">Operator portal</a><a class="btn" href="/travel.html">Passenger search</a><a class="btn" href="/cancellation-policy.html">Public cancellation policy</a>
+</div></section>
+<section class="panel"><h2>What this page does not assume</h2><ul class="note"><li>A booking is not treated as a successful payment.</li><li>Demo records and placeholder imagery are not treated as verified operator evidence.</li><li>Payment credentials, WhatsApp delivery and real wallet refunds require provider-side configuration and confirmation.</li><li>A successful API health check is not proof of a complete end-to-end booking.</li></ul></section>
+<footer id="updated">Live operational data is loaded only for an authenticated administrator.</footer>
+</main>
+<script>
+const el=id=>document.getElementById(id);
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const n=v=>Number(v||0);
+function status(label,kind){return '<span class="status '+kind+'">'+label+'</span>'}
+function stage(num,title,desc,state,label,href){
+ return '<article class="stage"><div class="number">'+num+'</div><div><h3>'+title+'</h3><p>'+desc+'</p>'+status(label,state)+(href?' <a class="btn" style="margin-left:6px;padding:5px 9px" href="'+href+'">Open</a>':'')+'</div></article>';
+}
+async function load(){
+ el("refresh").disabled=true;el("alert").innerHTML="<strong>Refreshing production checks…</strong>Fetching live admin readiness records.";
+ try{
+  const r=await fetch("/api/admin-launch-readiness",{credentials:"same-origin",headers:{accept:"application/json"}});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(r.status===401||r.status===403?"Administrator sign-in is required to view pilot readiness.":(d.error||"Readiness service returned HTTP "+r.status));
+  const s=d.summary||{},ops=Array.isArray(d.operators)?d.operators:[];
+  const vals=[s.operators_approved,s.pending_documents,s.active_buses,s.future_departures,s.successful_payments];
+  const labels=["Approved operators","Pending documents","Active buses","Future departures","Successful payments"];
+  el("metrics").innerHTML=vals.map((v,i)=>'<div class="metric"><small>'+labels[i]+'</small><b>'+n(v)+'</b></div>').join("");
+  const docs=ops.reduce((a,o)=>a+n(o.documents_approved),0);
+  const totalDocs=ops.length*4;
+  const activeBuses=n(s.active_buses),future=n(s.future_departures),paid=n(s.successful_payments);
+  const approved=n(s.operators_approved);
+  const photos=n(s.approved_photos);
+  const assigned=ops.reduce((a,o)=>a+n(o.departures_with_driver),0);
+  const allFour=ops.some(o=>n(o.documents_approved)>=4&&o.status==="approved");
+  const stages=[
+   stage(1,"Operator verification","Approved operators: "+approved+" · approved documents: "+docs+"/"+totalDocs,allFour?"ready":"blocked",allFour?"At least one operator verified":"Operator verification needed","/admin-verified-operators.html"),
+   stage(2,"Bus and fleet evidence","Active buses: "+activeBuses+" · approved photos: "+photos,activeBuses>0&&photos>0?"ready":"blocked",activeBuses>0&&photos>0?"Fleet evidence available":"Photos or active fleet missing","/admin-bus-images.html"),
+   stage(3,"Publish a real departure","Future scheduled departures: "+future,future>0?"ready":"blocked",future>0?"Future journey available":"No future journey published","/operator.html"),
+   stage(4,"Driver assignment","Future departures with driver: "+assigned,future>0&&assigned>0?"ready":"blocked",future>0&&assigned>0?"Driver assignment found":"Driver assignment needed","/operator-drivers.html"),
+   stage(5,"Passenger booking and payment","Successful payment transactions: "+paid,paid>0?"ready":"blocked",paid>0?"Payment transaction recorded":"Live payment not yet verified","/admin-payments.html"),
+   stage(6,"Cancellation and refund exercise","Requires a paid test booking and provider-confirmed refund reference","blocked","Manual live-provider test required","/admin-cancellations.html")
+  ];
+  el("stages").innerHTML=stages.join("");
+  el("operators").innerHTML=ops.length?'<table><thead><tr><th>Operator</th><th>Status</th><th>Documents</th><th>Active buses</th><th>Approved photos</th><th>Future trips</th><th>Trips with driver</th><th>Paid bookings</th></tr></thead><tbody>'+ops.map(o=>'<tr><td><strong>'+esc(o.name)+'</strong></td><td>'+esc(o.status)+'</td><td>'+n(o.documents_approved)+'/4 approved</td><td>'+n(o.buses_active)+'</td><td>'+n(o.photos_approved)+'</td><td>'+n(o.future_departures)+'</td><td>'+n(o.departures_with_driver)+'</td><td>'+n(o.successful_payments)+'</td></tr>').join("")+'</tbody></table>':'<p>No operator records are currently available.</p>';
+  const ready=allFour&&activeBuses>0&&photos>0&&future>0&&assigned>0&&paid>0;
+  el("alert").innerHTML='<strong>'+(ready?'Core pilot prerequisites are present':'Pilot is not yet ready for unrestricted bookings')+'</strong>Current database state: '+ops.length+' operator records, '+activeBuses+' active buses, '+future+' future departures and '+paid+' successful payment transactions. Cancellation/refund and external messaging still need separate end-to-end confirmation.';
+  el("alert").style.background=ready?"#eaf7f0":"#fff9ec";el("alert").style.borderColor=ready?"#c6e7d5":"#ead9b5";el("updated").textContent="Last refreshed: "+new Date(d.generated_at||Date.now()).toLocaleString()+" · Source: admin launch readiness API.";
+ }catch(e){
+  el("alert").innerHTML='<strong>Live checks could not be loaded</strong>'+esc(e.message);
+  el("operators").innerHTML='<div class="error">'+esc(e.message)+'</div>';
+ }finally{el("refresh").disabled=false;}
+}
+el("refresh").addEventListener("click",load);load();
+</script>
+</body></html>
