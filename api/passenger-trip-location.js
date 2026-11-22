@@ -11,8 +11,8 @@ export default async function(req,res){
  const bookingId=String(req.body?.booking_id||req.query?.booking_id||"");
  if(!/^[0-9a-f-]{36}$/i.test(bookingId))return res.status(400).json({error:"Choose a valid bus booking."});
  if(req.method==="DELETE"){
-  const q=await db.query("UPDATE passenger_trip_locations SET revoked_at=now() WHERE booking_id=$1 AND user_id=$2 AND revoked_at IS NULL RETURNING booking_id",[bookingId,uid]);
-  return res.json({ok:true,revoked:q.rows.length>0,message:q.rows.length?"Pickup location sharing has been stopped.":"No active location share was found."});
+  const q=await db.query("DELETE FROM passenger_trip_locations WHERE booking_id=$1 AND user_id=$2 RETURNING booking_id",[bookingId,uid]);
+  return res.json({ok:true,revoked:q.rows.length>0,message:q.rows.length?"Pickup location sharing stopped and the saved coordinates were deleted.":"No active location share was found."});
  }
  if(req.body?.consent!==true)return res.status(400).json({error:"Explicit consent is required before sharing your location."});
  const lat=Number(req.body?.latitude),lng=Number(req.body?.longitude),accuracy=req.body?.accuracy_m==null?null:Number(req.body.accuracy_m);

@@ -110,6 +110,10 @@ write = "own"
 path = "/api/expire-seat-holds"
 schedule = "0 * * * *"
 
+[[cron]]
+path = "/api/expire-passenger-trip-locations"
+schedule = "0 * * * *"
+
 [[secret]]
 name = "KHALTI_LIVE_SECRET_KEY"
 required = false
