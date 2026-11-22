@@ -4,7 +4,7 @@
 **Live site:** https://yatrio-nepal-bus.hatchable.site  
 **Project console:** https://hatchable.com/console/projects/yatrio-nepal-bus  
 **Product category:** Nepal-focused bus booking, trip planning and travel-services marketplace.  
-**Current release at time of this document:** V146 (destination catalogue expansion and project documentation).
+**Current release at time of this document:** V147 (nationwide destination expansion, regional photo coverage and project documentation).
 
 ---
 
@@ -149,6 +149,8 @@ Browser geolocation requires HTTPS and explicit permission. Location sharing is 
 ## 10. Local QA and safe demonstration testing
 
 Use synthetic data only in a clearly marked test environment or isolated test records. Never use demo records to claim a real operator has been verified, a bus is actually scheduled, a payment has settled, or a refund has been issued.
+
+**V147 live smoke-test evidence:** the public marketplace API returned 61 destinations; the travel page rendered 61 destination cards and 61 Leaflet map markers; all 13 gallery images loaded with non-zero dimensions; the new Jumla itinerary fallback generated seven day cards; and the tested travel/planner pages produced zero browser page errors. An 800 px viewport check showed no horizontal overflow on the travel page. This is a focused smoke test, not a full booking/payment end-to-end certification or a complete mobile/cross-browser audit.
 
 Recommended smoke-test sequence:
 1. Open the home page and verify bus search loads.
