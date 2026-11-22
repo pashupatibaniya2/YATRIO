@@ -169,3 +169,7 @@ description = "Approved WhatsApp template name with eight body placeholders for 
 name = "WHATSAPP_TEMPLATE_LANGUAGE"
 required = false
 description = "Approved WhatsApp template language code, e.g. en or en_US."
+
+[db.tables.passenger_trip_locations]
+read = "own"
+write = "own"
