@@ -16,7 +16,12 @@ async function policyFor(operatorId){
  const base=(await db.query("SELECT rules FROM yatrio_cancellation_policy WHERE id=1")).rows[0];
  if(!base)throw new Error("Platform cancellation policy is unavailable.");
  const own=(await db.query("SELECT rules FROM operator_cancellation_policies WHERE operator_id=$1",[operatorId])).rows[0];
- return {rules:own?.rules||base.rules,source:own?"operator":"platform"};
+ const rules=base.rules.map((tier,i)=>{
+  const requested=own?.rules?.[i]?.fee_percent;
+  const fee=Math.min(Number.isFinite(Number(requested))?Number(requested):Number(tier.fee_percent),Number(tier.fee_percent));
+  return {...tier,fee_percent:fee,refund_percent:100-fee};
+ });
+ return {rules,source:own?"operator":"platform"};
 }
 export default async function(req,res){
  const userId=String(req.user.id);
