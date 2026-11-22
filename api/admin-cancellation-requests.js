@@ -14,7 +14,8 @@ export default async function(req,res){
  const prior=await db.query("SELECT * FROM bus_cancellation_requests WHERE id=$1",[id]);
  if(!prior.rows.length) return res.status(404).json({error:"Cancellation request not found."});
  const p=prior.rows[0];
- if(p.status==="refund_recorded"||p.status==="rejected") return res.status(409).json({error:"This request is already closed."});
+ const allowed={pending_review:["approved","rejected"],approved:["processing","rejected"],processing:["refund_recorded","rejected"]};
+ if(!(allowed[p.status]||[]).includes(status)) return res.status(409).json({error:"That status transition is not allowed. Review must move pending to approved or rejected, then processing, then refund recorded."});
  if(status==="refund_recorded"&&(!ref||actual===null||!Number.isFinite(actual)||actual<0||actual>Number(p.paid_amount))) return res.status(400).json({error:"A provider refund reference and valid actual refund amount (not above the paid amount) are required to record a refund."});
  if(status==="refund_recorded"&&actual>Number(p.estimated_refund)+0.01) return res.status(409).json({error:"Actual refund cannot exceed the policy estimate without a separately documented admin exception."});
  const r=await db.query("UPDATE bus_cancellation_requests SET status=$2,admin_note=$3,provider_refund_reference=$4,actual_refund_amount=$5,reviewed_by=$6,reviewed_at=now(),updated_at=now() WHERE id=$1 RETURNING id,status,booking_ref,estimated_refund,actual_refund_amount,provider_refund_reference,updated_at",[id,status,note,ref,actual,String(req.member?.id||req.user?.id||"admin")]);

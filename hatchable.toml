@@ -177,3 +177,7 @@ description = "Approved WhatsApp template language code, e.g. en or en_US."
 [db.tables.passenger_trip_locations]
 read = "own"
 write = "own"
+
+[db.tables.bus_cancellation_requests]
+read = "own"
+write = "own"
