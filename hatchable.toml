@@ -98,6 +98,14 @@ write = "own"
 read = "own"
 write = "own"
 
+[db.tables.operator_drivers]
+read = "own"
+write = "own"
+
+[db.tables.schedule_driver_assignments]
+read = "own"
+write = "own"
+
 [[cron]]
 path = "/api/expire-seat-holds"
 schedule = "0 * * * *"
