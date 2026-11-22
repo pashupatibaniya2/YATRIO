@@ -21,8 +21,8 @@ async function finish(payment,verification,providerRef){
   ]);
   const finalStatus=tx.results?.[0]?.rows?.[0]?.status||"payment_review";
   try {
-    const booking=await db.query("SELECT b.customer_user_id,b.passenger_email,b.passenger_name,b.pnr,b.total_amount,b.currency,s.departure_at,bus.name AS service_name FROM bookings b JOIN schedules s ON s.id=b.schedule_id JOIN buses bus ON bus.id=s.bus_id WHERE b.id=$1",[payment.booking_id]);
-    if(booking.rows.length){const b=booking.rows[0];await notifyBooking({userId:String(payment.user_id||b.customer_user_id||""),bookingType:"bus",bookingId:payment.booking_id,bookingRef:b.pnr,eventType:finalStatus==="confirmed"?"bus_paid":"bus_review",to:b.passenger_email,name:b.passenger_name,service:b.service_name,amount:b.total_amount,currency:b.currency,when:b.departure_at});}
+    const booking=await db.query("SELECT b.customer_user_id,b.passenger_email,b.passenger_phone,b.passenger_name,b.pnr,b.total_amount,b.currency,b.seat_numbers,s.departure_at,bus.name AS service_name,bus.registration_no,o.name AS operator_name,o.phone AS operator_phone,t1.name AS origin,t2.name AS destination FROM bookings b JOIN schedules s ON s.id=b.schedule_id JOIN buses bus ON bus.id=s.bus_id JOIN operators o ON o.id=bus.operator_id JOIN routes r ON r.id=s.route_id LEFT JOIN terminals t1 ON t1.id=r.origin_terminal_id LEFT JOIN terminals t2 ON t2.id=r.destination_terminal_id WHERE b.id=$1",[payment.booking_id]);
+    if(booking.rows.length){const b=booking.rows[0];await notifyBooking({userId:String(payment.user_id||b.customer_user_id||""),bookingType:"bus",bookingId:payment.booking_id,bookingRef:b.pnr,eventType:finalStatus==="confirmed"?"bus_paid":"bus_review",to:b.passenger_email,phone:b.passenger_phone,name:b.passenger_name,service:b.service_name,amount:b.total_amount,currency:b.currency,when:b.departure_at,details:"Route: "+b.origin+" to "+b.destination+" · Seats: "+(b.seat_numbers||[]).join(", ")+" · Bus: "+b.registration_no+" · Operator: "+b.operator_name+" · Contact: "+b.operator_phone});}
   } catch(e) { console.error("Verified bus payment notification could not be recorded."); }
   return finalStatus;
 }

@@ -5,7 +5,7 @@ export default async function(req,res){
  const uid=String(req.user?.id||"");
  if(!uid)return res.status(401).json({error:"Please sign in."});
  if(req.method==="GET"){
-  const result=await db.query("SELECT id,booking_type,booking_id,booking_ref,event_type,title,message,email_status,is_read,created_at FROM booking_notifications WHERE user_id=$1 ORDER BY created_at DESC LIMIT 100",[uid]);
+  const result=await db.query("SELECT id,booking_type,booking_id,booking_ref,event_type,title,message,email_status,whatsapp_status,is_read,created_at FROM booking_notifications WHERE user_id=$1 ORDER BY created_at DESC LIMIT 100",[uid]);
   return res.json({notifications:result.rows,unread_count:result.rows.filter(x=>!x.is_read).length});
  }
  const id=String(req.body?.notification_id||"");

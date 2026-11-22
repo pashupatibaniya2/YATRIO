@@ -2,7 +2,7 @@ import { db, storage } from "hatchable";
 export const access = "user";
 export const methods = ["GET","PUT"];
 const clean=(v,n=120)=>String(v||"").trim().slice(0,n);
-const defaults={booking_updates:true,trip_tips:false,offers:false};
+const defaults={booking_updates:true,trip_tips:false,offers:false,whatsapp_updates:false};
 export default async function(req,res){
  const uid=String(req.user?.id||"");
  if(!uid)return res.status(401).json({error:"Please sign in to view your traveller profile."});
@@ -19,7 +19,8 @@ export default async function(req,res){
  if(emergencyPhone&&!/^[+0-9() .-]{7,30}$/.test(emergencyPhone))return res.status(400).json({error:"Enter a valid emergency contact phone number."});
  if((emergencyName||emergencyPhone)&&(!emergencyName||!emergencyPhone))return res.status(400).json({error:"Enter both the emergency contact name and phone number, or leave both blank."});
  const safePrefs={travel_style:["adventure","culture","nature","relaxed","family","food"].includes(prefs.travel_style)?prefs.travel_style:"",seat_preference:["window","aisle","no_preference"].includes(prefs.seat_preference)?prefs.seat_preference:"no_preference",dietary_notes:clean(prefs.dietary_notes,160)};
- const safeNotifications={booking_updates:notifications.booking_updates!==false,trip_tips:notifications.trip_tips===true,offers:notifications.offers===true};
+ const safeNotifications={booking_updates:notifications.booking_updates!==false,trip_tips:notifications.trip_tips===true,offers:notifications.offers===true,whatsapp_updates:notifications.whatsapp_updates===true};
+ if(safeNotifications.whatsapp_updates&&!/^\+[1-9]\d{7,14}$/.test(phone.replace(/[() .-]/g,"")))return res.status(400).json({error:"Enter your WhatsApp number in international format, such as +97798XXXXXXXX, before opting in."});
  await db.query("INSERT INTO traveller_profiles(user_id,full_name,phone,home_city,emergency_name,emergency_phone,emergency_relationship,travel_preferences,notification_preferences) VALUES($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb) ON CONFLICT(user_id) DO UPDATE SET full_name=EXCLUDED.full_name,phone=EXCLUDED.phone,home_city=EXCLUDED.home_city,emergency_name=EXCLUDED.emergency_name,emergency_phone=EXCLUDED.emergency_phone,emergency_relationship=EXCLUDED.emergency_relationship,travel_preferences=EXCLUDED.travel_preferences,notification_preferences=EXCLUDED.notification_preferences,updated_at=now()",[uid,name,phone,city,emergencyName,emergencyPhone,relationship,JSON.stringify(safePrefs),JSON.stringify(safeNotifications)]);
  return res.json({profile:{email:base.rows[0]?.email||req.user?.email||"",full_name:name,phone,home_city:city,emergency_name:emergencyName,emergency_phone:emergencyPhone,emergency_relationship:relationship,travel_preferences:safePrefs,notification_preferences:safeNotifications,avatar_url:avatarUrl},message:"Traveller profile and preferences saved."});
 }

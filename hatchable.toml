@@ -90,6 +90,14 @@ write = "own"
 read = "public"
 write = "own"
 
+[db.tables.bus_trip_share_links]
+read = "own"
+write = "own"
+
+[db.tables.bus_live_locations]
+read = "own"
+write = "own"
+
 [[cron]]
 path = "/api/expire-seat-holds"
 schedule = "0 * * * *"
@@ -128,3 +136,28 @@ description = "Fonepay production merchant API username. Keep server-side only."
 name = "FONEPAY_PASSWORD"
 required = false
 description = "Fonepay production merchant API password. Keep server-side only."
+
+[[secret]]
+name = "WHATSAPP_ACCESS_TOKEN"
+required = false
+description = "Meta WhatsApp Cloud API permanent/system-user access token. Store server-side only."
+
+[[secret]]
+name = "WHATSAPP_PHONE_NUMBER_ID"
+required = false
+description = "Meta WhatsApp Business phone-number ID for YATRIO."
+
+[[secret]]
+name = "WHATSAPP_GRAPH_API_VERSION"
+required = false
+description = "Meta Graph API version, for example v23.0. Use a currently supported version."
+
+[[secret]]
+name = "WHATSAPP_BOOKING_TEMPLATE_NAME"
+required = false
+description = "Approved WhatsApp template name with eight body placeholders for YATRIO booking updates."
+
+[[secret]]
+name = "WHATSAPP_TEMPLATE_LANGUAGE"
+required = false
+description = "Approved WhatsApp template language code, e.g. en or en_US."

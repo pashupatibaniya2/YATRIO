@@ -39,7 +39,7 @@ export default async function(req,res) {
     );
     const linked=await db.query("UPDATE seat_inventory SET booking_id=$1 WHERE hold_token=$2 AND status='held' AND hold_expires_at > now() RETURNING id",[created.rows[0].id,token]);
     if(linked.rows.length!==seatIds.length) throw new Error("The seat hold expired before the reservation could be completed. Please select seats again.");
-    try { await notifyBooking({userId:String(req.user?.id||""),bookingType:"bus",bookingId:created.rows[0].id,bookingRef:created.rows[0].pnr,eventType:"bus_request",to:email,name,service:"Bus journey",amount:gross,currency:"NPR",details:"Seats: "+seatRows.map(x=>x.seat_number).join(", ")}); } catch(e) { console.error("Booking notification could not be recorded."); }
+    try { await notifyBooking({userId:String(req.user?.id||""),bookingType:"bus",bookingId:created.rows[0].id,bookingRef:created.rows[0].pnr,eventType:"bus_request",to:email,phone,name,service:"Bus journey",amount:gross,currency:"NPR",details:"Seats: "+seatRows.map(x=>x.seat_number).join(", ")}); } catch(e) { console.error("Booking notification could not be recorded."); }
     res.status(201).json({booking:created.rows[0], seats:seatRows.map(x=>x.seat_number), hold_expires_in_minutes:8, payment_required:true, message:"Reservation reference created. Payment is required; the booking is not a confirmed ticket until the wallet provider verifies payment."});
   } catch (e) {
     await db.query("UPDATE bookings SET status='expired' WHERE pnr=$1 AND status='awaiting_payment'",[pnr]);
