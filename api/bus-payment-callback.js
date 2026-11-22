@@ -75,7 +75,7 @@ export default async function(req,res){
   const found=await db.query("SELECT p.id,p.booking_id,p.booking_ref,p.user_id,p.amount_paisa,p.purchase_order_id,p.status,p.provider,b.status AS booking_status FROM payment_transactions p LEFT JOIN bookings b ON b.id=p.booking_id WHERE p.booking_type='bus' AND p.provider='khalti' AND p.provider_payment_id=$1 LIMIT 1",[pidx]);
   if(!found.rows.length) return res.redirect(go("not-found",""));
   const payment=found.rows[0];
-  if(payment.status==="succeeded") return res.redirect(go("success",payment.booking_ref));
+  if(payment.status==="succeeded") return res.redirect(go(payment.booking_status==="confirmed"?"success":"review",payment.booking_ref));
   const secret=await config.get("KHALTI_LIVE_SECRET_KEY");
   if(!secret) return res.redirect(go("verify-later",payment.booking_ref));
   try{
