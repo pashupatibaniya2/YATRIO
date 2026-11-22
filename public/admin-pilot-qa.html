@@ -75,19 +75,19 @@ async function load(){
   const approved=n(s.operators_approved);
   const photos=n(s.approved_photos);
   const assigned=ops.reduce((a,o)=>a+n(o.departures_with_driver),0);
-  const allFour=ops.some(o=>n(o.documents_approved)>=4&&o.status==="approved");
+  const pilot=ops.find(o=>o.status==="approved"&&n(o.documents_approved)>=4);
   const stages=[
-   stage(1,"Operator verification","Approved operators: "+approved+" · approved documents: "+docs+"/"+totalDocs,allFour?"ready":"blocked",allFour?"At least one operator verified":"Operator verification needed","/admin-verified-operators.html"),
-   stage(2,"Bus and fleet evidence","Active buses: "+activeBuses+" · approved photos: "+photos,activeBuses>0&&photos>0?"ready":"blocked",activeBuses>0&&photos>0?"Fleet evidence available":"Photos or active fleet missing","/admin-bus-images.html"),
-   stage(3,"Publish a real departure","Future scheduled departures: "+future,future>0?"ready":"blocked",future>0?"Future journey available":"No future journey published","/operator.html"),
-   stage(4,"Driver assignment","Future departures with driver: "+assigned,future>0&&assigned>0?"ready":"blocked",future>0&&assigned>0?"Driver assignment found":"Driver assignment needed","/operator-drivers.html"),
-   stage(5,"Passenger booking and payment","Successful payment transactions: "+paid,paid>0?"ready":"blocked",paid>0?"Payment transaction recorded":"Live payment not yet verified","/admin-payments.html"),
-   stage(6,"Cancellation and refund exercise","Requires a paid test booking and provider-confirmed refund reference","blocked","Manual live-provider test required","/admin-cancellations.html")
+   stage(1,"Operator verification","Approved operators: "+approved+" · approved documents: "+docs+"/"+totalDocs, pilot?"ready":"blocked",pilot?"Operator with four approved documents found":"Operator verification needed","/admin-verified-operators.html"),
+   stage(2,"Bus and fleet evidence","Pilot operator active buses: "+n(pilot?.buses_active)+" · approved photos: "+n(pilot?.photos_approved),pilot&&n(pilot.buses_active)>0&&n(pilot.photos_approved)>0?"ready":"blocked",pilot&&n(pilot.buses_active)>0&&n(pilot.photos_approved)>0?"Pilot fleet evidence available":"Pilot operator needs an active bus and approved photos","/admin-bus-images.html"),
+   stage(3,"Publish a real departure","Pilot operator future scheduled departures: "+n(pilot?.future_departures),pilot&&n(pilot.future_departures)>0?"ready":"blocked",pilot&&n(pilot.future_departures)>0?"Pilot journey available":"Publish a future journey for the verified operator","/operator.html"),
+   stage(4,"Driver assignment","Pilot operator future departures with driver: "+n(pilot?.departures_with_driver),pilot&&n(pilot.departures_with_driver)>0?"ready":"blocked",pilot&&n(pilot.departures_with_driver)>0?"Pilot driver assignment found":"Assign a driver to the pilot departure","/operator-drivers.html"),
+   stage(5,"Passenger booking and payment","Pilot operator successful payment transactions: "+n(pilot?.successful_payments),pilot&&n(pilot.successful_payments)>0?"ready":"blocked",pilot&&n(pilot.successful_payments)>0?"Pilot payment transaction recorded":"Complete a provider-verified passenger payment","/admin-payments.html"),
+   stage(6,"Cancellation and refund exercise","Requires a paid pilot booking and provider-confirmed refund reference","blocked","Manual live-provider test required","/admin-cancellations.html")
   ];
   el("stages").innerHTML=stages.join("");
   el("operators").innerHTML=ops.length?'<table><thead><tr><th>Operator</th><th>Status</th><th>Documents</th><th>Active buses</th><th>Approved photos</th><th>Future trips</th><th>Trips with driver</th><th>Paid bookings</th></tr></thead><tbody>'+ops.map(o=>'<tr><td><strong>'+esc(o.name)+'</strong></td><td>'+esc(o.status)+'</td><td>'+n(o.documents_approved)+'/4 approved</td><td>'+n(o.buses_active)+'</td><td>'+n(o.photos_approved)+'</td><td>'+n(o.future_departures)+'</td><td>'+n(o.departures_with_driver)+'</td><td>'+n(o.successful_payments)+'</td></tr>').join("")+'</tbody></table>':'<p>No operator records are currently available.</p>';
-  const ready=allFour&&activeBuses>0&&photos>0&&future>0&&assigned>0&&paid>0;
-  el("alert").innerHTML='<strong>'+(ready?'Core pilot prerequisites are present':'Pilot is not yet ready for unrestricted bookings')+'</strong>Current database state: '+ops.length+' operator records, '+activeBuses+' active buses, '+future+' future departures and '+paid+' successful payment transactions. Cancellation/refund and external messaging still need separate end-to-end confirmation.';
+  const ready=!!pilot&&n(pilot.buses_active)>0&&n(pilot.photos_approved)>0&&n(pilot.future_departures)>0&&n(pilot.departures_with_driver)>0&&n(pilot.successful_payments)>0;
+  el("alert").innerHTML='<strong>'+(ready?'Core pilot prerequisites are present':'Pilot is not yet ready for unrestricted bookings')+'</strong>Global database totals: '+ops.length+' operator records, '+activeBuses+' active buses, '+future+' future departures and '+paid+' successful payment transactions. Stages 1–5 are evaluated against the same verified operator so separate operators cannot accidentally create a false-ready result. Cancellation/refund and external messaging still need separate end-to-end confirmation.';
   el("alert").style.background=ready?"#eaf7f0":"#fff9ec";el("alert").style.borderColor=ready?"#c6e7d5":"#ead9b5";el("updated").textContent="Last refreshed: "+new Date(d.generated_at||Date.now()).toLocaleString()+" · Source: admin launch readiness API.";
  }catch(e){
   el("alert").innerHTML='<strong>Live checks could not be loaded</strong>'+esc(e.message);
