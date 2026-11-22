@@ -40,10 +40,10 @@ export default async function(req,res){
       const raw=atob(encoded.replace(/ /g,"+").replace(/-/g,"+").replace(/_/g,"/"));
       const response=JSON.parse(decodeURIComponent(Array.from(raw,c=>"%"+c.charCodeAt(0).toString(16).padStart(2,"0")).join("")));
       const uuid=String(response.transaction_uuid||"");
-      const found=await db.query("SELECT id,booking_id,booking_ref,user_id,amount,amount_paisa,purchase_order_id,status,provider FROM payment_transactions WHERE booking_type='bus' AND provider='esewa' AND provider_payment_id=$1 LIMIT 1",[uuid]);
+      const found=await db.query("SELECT p.id,p.booking_id,p.booking_ref,p.user_id,p.amount,p.amount_paisa,p.purchase_order_id,p.status,p.provider,b.status AS booking_status FROM payment_transactions p LEFT JOIN bookings b ON b.id=p.booking_id WHERE p.booking_type='bus' AND p.provider='esewa' AND p.provider_payment_id=$1 LIMIT 1",[uuid]);
       if(!found.rows.length) return res.redirect(go("not-found",""));
       const payment=found.rows[0];
-      if(payment.status==="succeeded") return res.redirect(go("success",payment.booking_ref));
+      if(payment.status==="succeeded") return res.redirect(go(payment.booking_status==="confirmed"?"success":"review",payment.booking_ref));
       const secret=await config.get("ESEWA_SECRET_KEY"),product=await config.get("ESEWA_PRODUCT_CODE");
       if(!secret||!product) return res.redirect(go("verify-later",payment.booking_ref));
       if(response.product_code!==product||response.status!=="COMPLETE"||!response.signed_field_names||!response.signature) return res.redirect(go("pending",payment.booking_ref));
@@ -72,7 +72,7 @@ export default async function(req,res){
   if(provider!=="khalti") return res.redirect(go("invalid",""));
   const pidx=String(req.query?.pidx||"");
   if(!pidx||pidx.length>100) return res.redirect(go("invalid",""));
-  const found=await db.query("SELECT id,booking_id,booking_ref,user_id,amount_paisa,purchase_order_id,status,provider FROM payment_transactions WHERE booking_type='bus' AND provider='khalti' AND provider_payment_id=$1 LIMIT 1",[pidx]);
+  const found=await db.query("SELECT p.id,p.booking_id,p.booking_ref,p.user_id,p.amount_paisa,p.purchase_order_id,p.status,p.provider,b.status AS booking_status FROM payment_transactions p LEFT JOIN bookings b ON b.id=p.booking_id WHERE p.booking_type='bus' AND p.provider='khalti' AND p.provider_payment_id=$1 LIMIT 1",[pidx]);
   if(!found.rows.length) return res.redirect(go("not-found",""));
   const payment=found.rows[0];
   if(payment.status==="succeeded") return res.redirect(go("success",payment.booking_ref));
