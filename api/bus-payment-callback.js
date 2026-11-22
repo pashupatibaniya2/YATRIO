@@ -81,7 +81,7 @@ export default async function(req,res){
   try{
     const response=await fetch(KHALTI_URL+"/epayment/lookup/",{method:"POST",headers:{"Authorization":"Key "+secret,"Content-Type":"application/json"},body:JSON.stringify({pidx})});
     const verification=await response.json();
-    if(!response.ok||verification.pidx!==pidx||Number(verification.total_amount)!==Number(payment.amount_paisa)) return res.redirect(go("review",payment.booking_ref));
+    if(!response.ok||verification.pidx!==pidx||String(verification.purchase_order_id||"")!==String(payment.purchase_order_id)||Number(verification.total_amount)!==Number(payment.amount_paisa)) return res.redirect(go("review",payment.booking_ref));
     const status=String(verification.status||"").toLowerCase();
     if(status==="completed"&&verification.refunded===true){
       await db.query("UPDATE payment_transactions SET status='refunded',provider_payload=$1::jsonb,updated_at=now() WHERE id=$2 AND status<>'succeeded'",[JSON.stringify(verification),payment.id]);

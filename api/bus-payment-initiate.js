@@ -30,12 +30,26 @@ export default async function(req,res) {
   if(provider==="fonepay"&&(!configValues.secret||!configValues.merchant||!configValues.username||!configValues.password)) return res.status(503).json({error:"Fonepay Dynamic QR is implemented, but YATRIO still needs its live merchant code, HMAC secret, API username and API password from Fonepay. No payment was initiated."});
   if(provider==="khalti"&&!configValues.secret) return res.status(503).json({error:"Khalti production credentials are not configured. No payment was initiated."});
   if(provider==="esewa"&&(!configValues.secret||!configValues.product)) return res.status(503).json({error:"eSewa production merchant product code and signing secret are not configured. No payment was initiated."});
-  await db.query("UPDATE payment_transactions SET status='failed',failure_reason='Previous checkout attempt expired',updated_at=now() WHERE booking_type='bus' AND booking_id=$1 AND user_id=$2 AND provider=$3 AND status IN ('initiated','pending') AND (expires_at<=now() OR created_at<now()-interval '30 minutes')",[bookingId,userId,provider]);
-  const existing=await db.query("SELECT id,checkout_url,status,expires_at,provider_payload FROM payment_transactions WHERE booking_type='bus' AND booking_id=$1 AND user_id=$2 AND provider=$3 AND status IN ('initiated','pending') AND expires_at>now() ORDER BY created_at DESC LIMIT 1",[bookingId,userId,provider]);
+  await db.query("UPDATE payment_transactions SET status='failed',failure_reason='Previous checkout attempt expired',updated_at=now() WHERE booking_type='bus' AND booking_id=$1 AND user_id=$2 AND status IN ('initiated','pending') AND (expires_at<=now() OR created_at<now()-interval '30 minutes')",[bookingId,userId]);
+  const existing=await db.query("SELECT id,provider,provider_payment_id,checkout_url,status,expires_at,provider_payload FROM payment_transactions WHERE booking_type='bus' AND booking_id=$1 AND user_id=$2 AND status IN ('initiated','pending') AND expires_at>now() ORDER BY created_at DESC LIMIT 1",[bookingId,userId]);
+  if(existing.rows.length&&existing.rows[0].provider!==provider) return res.status(409).json({error:"A payment attempt is already active with "+existing.rows[0].provider+". Complete it or wait for it to expire before choosing another wallet."});
   if(existing.rows.length&&existing.rows[0].checkout_url&&provider==="khalti") return res.json({payment_id:existing.rows[0].id,payment_url:existing.rows[0].checkout_url,qr_url:qr(existing.rows[0].checkout_url),amount,currency:"NPR",status:existing.rows[0].status,reused:true,provider,mode:"production"});
   if(existing.rows.length&&provider==="fonepay"&&existing.rows[0].provider_payload?.qr_message) return res.json({payment_id:existing.rows[0].id,provider,mode:"production",amount,currency:"NPR",status:existing.rows[0].status,prn:existing.rows[0].provider_payment_id,qr_message:existing.rows[0].provider_payload.qr_message,qr_url:qr(existing.rows[0].provider_payload.qr_message),expires_at:existing.rows[0].expires_at,reused:true});
   const orderId="YTRIO-BUS-"+crypto.randomUUID().replace(/-/g,"").slice(0,18).toUpperCase();
-  const inserted=await db.query("INSERT INTO payment_transactions (booking_type,booking_id,booking_ref,user_id,provider,mode,amount,amount_paisa,currency,purchase_order_id,status) VALUES ('bus',$1,$2,$3,$4,'production',$5,$6,'NPR',$7,'initiated') RETURNING id",[booking.id,booking.pnr,userId,provider,amount,amountPaisa,orderId]);
+  if(existing.rows.length&&provider==="esewa"&&existing.rows[0].provider_payment_id){
+    const active=existing.rows[0],transactionUuid=String(active.provider_payment_id);
+    const fields={amount:amount.toFixed(2),tax_amount:"0",total_amount:amount.toFixed(2),transaction_uuid:transactionUuid,product_code:String(configValues.product),product_service_charge:"0",product_delivery_charge:"0",success_url:SITE+"/api/bus-payment-callback?provider=esewa",failure_url:SITE+"/api/bus-payment-callback?provider=esewa&failed=1&transaction_uuid="+encodeURIComponent(transactionUuid),signed_field_names:"total_amount,transaction_uuid,product_code"};
+    fields.signature=await hmacBase64(configValues.secret,"total_amount="+fields.total_amount+",transaction_uuid="+transactionUuid+",product_code="+fields.product_code);
+    return res.json({payment_id:active.id,provider,mode:"production",amount,currency:"NPR",status:active.status,form_url:ESEWA_URL,form_fields:fields,expires_at:active.expires_at,reused:true});
+  }
+  let inserted;
+  try {
+    inserted=await db.query("INSERT INTO payment_transactions (booking_type,booking_id,booking_ref,user_id,provider,mode,amount,amount_paisa,currency,purchase_order_id,status) VALUES ('bus',$1,$2,$3,$4,'production',$5,$6,'NPR',$7,'initiated') RETURNING id",[booking.id,booking.pnr,userId,provider,amount,amountPaisa,orderId]);
+  } catch(e) {
+    const active=await db.query("SELECT provider FROM payment_transactions WHERE booking_type='bus' AND booking_id=$1 AND user_id=$2 AND status IN ('initiated','pending') ORDER BY created_at DESC LIMIT 1",[bookingId,userId]);
+    if(active.rows.length) return res.status(409).json({error:"A payment attempt is already being prepared with "+active.rows[0].provider+". Please wait briefly and retry."});
+    throw e;
+  }
   const paymentId=inserted.rows[0].id;
   try {
     if(provider==="khalti") {

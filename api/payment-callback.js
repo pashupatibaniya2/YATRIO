@@ -1,18 +1,18 @@
 import { db, config } from "hatchable";
 import { notifyBooking } from "lib/booking-notifications.js";
-export const access = "user";
+export const access = "public";
 export const methods = ["GET"];
 const BASE = "https://dev.khalti.com/api/v2";
 export default async function(req,res) {
   const pidx = String(req.query.pidx || "");
   if (!pidx || pidx.length > 100) return res.status(400).json({error:"Missing or invalid payment reference."});
-  const userId=String(req.user.id);
   const { rows } = await db.query(
-    "SELECT id,booking_id,booking_ref,amount_paisa,status FROM payment_transactions WHERE provider='khalti' AND provider_payment_id=$1 AND user_id=$2 LIMIT 1",
-    [pidx,userId]
+    "SELECT id,booking_id,booking_ref,user_id,amount_paisa,purchase_order_id,status FROM payment_transactions WHERE booking_type='marketplace' AND provider='khalti' AND mode='sandbox' AND provider_payment_id=$1 LIMIT 1",
+    [pidx]
   );
-  if (!rows.length) return res.status(404).json({error:"Payment reference not found for this account."});
+  if (!rows.length) return res.status(404).json({error:"Payment reference not found."});
   const payment = rows[0];
+  const userId=String(payment.user_id);
   if (payment.status === "succeeded") return res.json({status:"succeeded",booking_ref:payment.booking_ref,message:"Payment was already verified."});
   const secret = await config.get("KHALTI_SECRET_KEY");
   if (!secret) return res.status(503).json({error:"Payment verification is temporarily unavailable. Sign in and retry from your bookings page."});
@@ -29,7 +29,7 @@ export default async function(req,res) {
   } catch (e) {
     return res.status(502).json({error:"Could not verify payment with Khalti. Booking remains unpaid."});
   }
-  if (verification.pidx !== pidx || Number(verification.total_amount) !== Number(payment.amount_paisa)) {
+  if (verification.pidx !== pidx || String(verification.purchase_order_id || "") !== String(payment.purchase_order_id) || Number(verification.total_amount) !== Number(payment.amount_paisa)) {
     await db.query(
       "UPDATE payment_transactions SET status='failed',failure_reason='Khalti reference or amount mismatch',provider_payload=$1::jsonb,updated_at=now() WHERE id=$2 AND user_id=$3 AND status <> 'succeeded'",
       [JSON.stringify(verification),payment.id,userId]
