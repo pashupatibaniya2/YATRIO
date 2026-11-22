@@ -3,7 +3,7 @@ export const access="admin";
 export const methods=["GET","POST"];
 export default async function(req,res){
  if(req.method==="GET"){
-  const r=await db.query("SELECT id,booking_ref,departure_at,hours_before_departure,paid_amount,fee_percent,fee_amount,refund_percent,estimated_refund,reason,status,admin_note,provider_refund_reference,actual_refund_amount,created_at,updated_at FROM bus_cancellation_requests ORDER BY created_at DESC LIMIT 100");
+  const r=await db.query("SELECT id,booking_ref,departure_at,hours_before_departure,paid_amount,fee_percent,fee_amount,refund_percent,estimated_refund,reason,status,admin_note,provider_refund_reference,actual_refund_amount,operator_id,policy_source,policy_rules_snapshot,created_at,updated_at FROM bus_cancellation_requests ORDER BY created_at DESC LIMIT 100");
   const policy=(await db.query("SELECT rules,updated_at FROM yatrio_cancellation_policy WHERE id=1")).rows[0];
   const audit=await db.query("SELECT actor_id,old_rules,new_rules,changed_at FROM yatrio_cancellation_policy_audit ORDER BY changed_at DESC LIMIT 10");
   return res.json({requests:r.rows,policy,audit:audit.rows});
