@@ -14,7 +14,7 @@ export default async function(req,res){
   const tiers=input.map(x=>({min_hours:Number(x.min_hours),fee_percent:Number(x.fee_percent)}));
   if(tiers.some(x=>!Number.isFinite(x.min_hours)||!Number.isFinite(x.fee_percent)||x.min_hours<0||x.min_hours>8760||x.fee_percent<0||x.fee_percent>100)) return res.status(400).json({error:"Thresholds must be 0–8760 hours and fees 0–100%."});
   if(tiers[tiers.length-1].min_hours!==0||tiers.some((x,i)=>i>0&&tiers[i-1].min_hours<=x.min_hours)) return res.status(400).json({error:"Thresholds must be strictly descending and the final tier must start at 0 hours."});
-  const labels=tiers.map((x,i)=>i===0?x.min_hours+" hours or more":(x.min_hours+" to under "+tiers[i-1].min_hours+" hours"));
+  const labels=tiers.map((x,i)=>i===0?x.min_hours+" hours or more":(i===tiers.length-1?"Under "+tiers[i-1].min_hours+" hours":x.min_hours+" to under "+tiers[i-1].min_hours+" hours"));
   const rules=tiers.map((x,i)=>({min_hours:x.min_hours,max_hours:i===0?null:tiers[i-1].min_hours,fee_percent:x.fee_percent,refund_percent:100-x.fee_percent,label:labels[i]}));
   const updated=await db.query("WITH old AS (SELECT rules FROM yatrio_cancellation_policy WHERE id=1), upd AS (UPDATE yatrio_cancellation_policy SET rules=$1::jsonb,updated_at=now() WHERE id=1 RETURNING rules,updated_at), audit AS (INSERT INTO yatrio_cancellation_policy_audit(actor_id,old_rules,new_rules) SELECT $2,old.rules,upd.rules FROM old,upd RETURNING id) SELECT upd.rules,upd.updated_at FROM upd",[JSON.stringify(rules),String(req.member?.id||req.user?.id||"admin")]);
   return res.json({policy:updated.rows[0],message:"Cancellation policy updated. New quotes use these rules; existing requests retain their original estimates."});
