@@ -4,7 +4,7 @@
 **Live site:** https://yatrio-nepal-bus.hatchable.site  
 **Project console:** https://hatchable.com/console/projects/yatrio-nepal-bus  
 **Product category:** Nepal-focused bus booking, trip planning and travel-services marketplace.  
-**Current release at time of this document:** V151 (destination-specific travel content, licensed photo/video media and stricter operator-verification visibility checks).
+**Current release at time of this document:** V153 (printable pilot operator onboarding kit, partner-page integration, destination media and stricter operator-verification visibility checks).
 
 ---
 
@@ -55,6 +55,12 @@ The platform also provides workspaces for transport operators, marketplace partn
 - Listing and image management.
 - Availability and booking request workflows for stays, rides and experiences.
 - Published partner inventory is distinct from destination inspiration content.
+
+### Pilot operator onboarding kit
+- `/operator-pilot-kit.html` is a printable preparation worksheet linked from the bus-partner information page.
+- Covers the four required verification documents, business contact details, actual fleet evidence, driver readiness, first-route/departure worksheet and safe handover practices.
+- Browser form fields and tick boxes are local-only; the page does not transmit applicant information or create an operator application.
+- The authenticated operator portal remains the only application/document submission path. Completing the kit does not mean YATRIO has verified or approved an operator.
 
 ### Administration
 - Operator verification and document moderation.
@@ -149,11 +155,14 @@ Browser geolocation requires HTTPS and explicit permission. Location sharing is 
 
 ## 10. Local QA and safe demonstration testing
 
+**V153 pilot onboarding kit:** added `/operator-pilot-kit.html`, a responsive, print-friendly checklist for genuine bus operators. It includes four-document preparation, company contacts, actual bus/fleet evidence, driver checks, a first-departure worksheet, and security/privacy reminders. Linked from `/become-a-partner.html`. The worksheet does not submit or persist applicant data and does not change operator status; all official application and document upload steps remain in the authenticated operator portal.
+
 Use synthetic data only in a clearly marked test environment or isolated test records. Never use demo records to claim a real operator has been verified, a bus is actually scheduled, a payment has settled, or a refund has been issued.
 
 **V150/V151 live smoke-test evidence:** the public marketplace API returns 61 destinations; the travel page renders 61 destination cards and 61 Leaflet map markers; all 16 gallery images loaded with non-zero dimensions; the official Nepal Tourism Board video iframe and outbound watch link are present; and all 34 newly expanded destination profiles generated three itinerary day cards and four nearby highlights each. Ten representative destinations across all seven provinces were additionally checked for correct title and image behaviour. Operator approval without documents was rejected with HTTP 409; the legacy incomplete operator's public profile returns HTTP 404 and operator comparison omits it. A post-test admin read confirmed the legacy demo record was not mutated. The tested pages produced zero browser page errors. This is a focused smoke test, not a full booking/payment end-to-end certification or a complete mobile/cross-browser audit.
 
 Recommended smoke-test sequence:
+0. Open `/operator-pilot-kit.html`; check all sections, editable worksheet fields, mobile layout and Print / Save PDF. Confirm the page clearly states that it does not submit data. Follow links to the partner overview and authenticated operator portal.
 1. Open the home page and verify bus search loads.
 2. Open `/travel.html`; search/filter destinations by each province and category.
 3. Select destination pins on the map; confirm the selected destination opens the planner.
