@@ -4,7 +4,7 @@
 **Live site:** https://yatrio-nepal-bus.hatchable.site  
 **Project console:** https://hatchable.com/console/projects/yatrio-nepal-bus  
 **Product category:** Nepal-focused bus booking, trip planning and travel-services marketplace.  
-**Current release at time of this document:** V153 (printable pilot operator onboarding kit, partner-page integration, destination media and stricter operator-verification visibility checks).
+**Current release at time of this document:** V154 (illustrated pilot operator onboarding kit with credited fleet-photo examples, responsive layout and print styling).
 
 ---
 
@@ -60,6 +60,7 @@ The platform also provides workspaces for transport operators, marketplace partn
 - `/operator-pilot-kit.html` is a printable preparation worksheet linked from the bus-partner information page.
 - Covers the four required verification documents, business contact details, actual fleet evidence, driver readiness, first-route/departure worksheet and safe handover practices.
 - Browser form fields and tick boxes are local-only; the page does not transmit applicant information or create an operator application.
+- Includes credited illustrative exterior and interior fleet-photo examples from the existing image library, with clear warnings that operators must submit current photos of their own actual vehicles. The examples are not partner fleet evidence.
 - The authenticated operator portal remains the only application/document submission path. Completing the kit does not mean YATRIO has verified or approved an operator.
 
 ### Administration
@@ -155,7 +156,7 @@ Browser geolocation requires HTTPS and explicit permission. Location sharing is 
 
 ## 10. Local QA and safe demonstration testing
 
-**V153 pilot onboarding kit:** added `/operator-pilot-kit.html`, a responsive, print-friendly checklist for genuine bus operators. It includes four-document preparation, company contacts, actual bus/fleet evidence, driver checks, a first-departure worksheet, and security/privacy reminders. Linked from `/become-a-partner.html`. The worksheet does not submit or persist applicant data and does not change operator status; all official application and document upload steps remain in the authenticated operator portal.
+**V154 illustrated pilot onboarding kit:** enhanced `/operator-pilot-kit.html` with a dedicated photo-preparation guide showing illustrative fleet exterior and interior examples. The images are explicitly labelled as examples, not verified partner vehicles; their attribution is maintained on `/image-credits.html`. Responsive mobile and print layouts include the photo guide. It includes four-document preparation, company contacts, actual bus/fleet evidence, driver checks, a first-departure worksheet, and security/privacy reminders. Linked from `/become-a-partner.html`. The worksheet does not submit or persist applicant data and does not change operator status; all official application and document upload steps remain in the authenticated operator portal.
 
 Use synthetic data only in a clearly marked test environment or isolated test records. Never use demo records to claim a real operator has been verified, a bus is actually scheduled, a payment has settled, or a refund has been issued.
 
