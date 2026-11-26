@@ -4,7 +4,7 @@
 **Live site:** https://yatrio-nepal-bus.hatchable.site  
 **Project console:** https://hatchable.com/console/projects/yatrio-nepal-bus  
 **Product category:** Nepal-focused bus booking, trip planning and travel-services marketplace.  
-**Current release at time of this document:** V149 (expanded destination-specific itineraries, licensed destination imagery and an official Nepal Tourism Board video embed).
+**Current release at time of this document:** V151 (destination-specific travel content, licensed photo/video media and stricter operator-verification visibility checks).
 
 ---
 
@@ -151,7 +151,7 @@ Browser geolocation requires HTTPS and explicit permission. Location sharing is 
 
 Use synthetic data only in a clearly marked test environment or isolated test records. Never use demo records to claim a real operator has been verified, a bus is actually scheduled, a payment has settled, or a refund has been issued.
 
-**V149 live smoke-test evidence:** the public marketplace API returns 61 destinations; the travel page renders 61 destination cards and 61 Leaflet map markers; all 16 gallery images loaded with non-zero dimensions; the official Nepal Tourism Board video iframe and outbound watch link are present; and all 34 newly expanded destination profiles generated three itinerary day cards and four nearby highlights each. Ten representative destinations across all seven provinces were additionally checked for correct title and image behaviour. The tested pages produced zero browser page errors. This is a focused smoke test, not a full booking/payment end-to-end certification or a complete mobile/cross-browser audit.
+**V150/V151 live smoke-test evidence:** the public marketplace API returns 61 destinations; the travel page renders 61 destination cards and 61 Leaflet map markers; all 16 gallery images loaded with non-zero dimensions; the official Nepal Tourism Board video iframe and outbound watch link are present; and all 34 newly expanded destination profiles generated three itinerary day cards and four nearby highlights each. Ten representative destinations across all seven provinces were additionally checked for correct title and image behaviour. Operator approval without documents was rejected with HTTP 409; the legacy incomplete operator's public profile returns HTTP 404 and operator comparison omits it. A post-test admin read confirmed the legacy demo record was not mutated. The tested pages produced zero browser page errors. This is a focused smoke test, not a full booking/payment end-to-end certification or a complete mobile/cross-browser audit.
 
 Recommended smoke-test sequence:
 1. Open the home page and verify bus search loads.
