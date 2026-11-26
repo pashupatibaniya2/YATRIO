@@ -4,7 +4,7 @@
 **Live site:** https://yatrio-nepal-bus.hatchable.site  
 **Project console:** https://hatchable.com/console/projects/yatrio-nepal-bus  
 **Product category:** Nepal-focused bus booking, trip planning and travel-services marketplace.  
-**Current release at time of this document:** V157 (visible destination photography on all 61 cards using exact or clearly labelled regional images, expanded place descriptions, and destination video discovery links).
+**Current release at time of this document:** V158 (visible destination photography on all 61 cards using exact or clearly labelled regional images, expanded place descriptions, and destination video discovery links).
 
 ---
 
