@@ -181,3 +181,11 @@ write = "own"
 [db.tables.bus_cancellation_requests]
 read = "own"
 write = "own"
+
+[db.tables.community_journeys]
+read = "public"
+write = "own"
+
+[db.tables.community_journey_reports]
+read = "own"
+write = "own"

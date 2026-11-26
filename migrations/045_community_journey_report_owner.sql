@@ -1,0 +1,1 @@
+ALTER TABLE community_journey_reports RENAME COLUMN reporter_user_id TO user_id;
