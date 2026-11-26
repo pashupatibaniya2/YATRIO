@@ -4,7 +4,7 @@
 **Live site:** https://yatrio-nepal-bus.hatchable.site  
 **Project console:** https://hatchable.com/console/projects/yatrio-nepal-bus  
 **Product category:** Nepal-focused bus booking, trip planning and travel-services marketplace.  
-**Current release at time of this document:** V147 (nationwide destination expansion, regional photo coverage and project documentation).
+**Current release at time of this document:** V149 (expanded destination-specific itineraries, licensed destination imagery and an official Nepal Tourism Board video embed).
 
 ---
 
@@ -33,7 +33,7 @@ The platform also provides workspaces for transport operators, marketplace partn
 - Payment initiation/status and callback routes for supported wallet integrations (provider credentials and live verification are still required).
 - Passenger dashboard, booking history, booking timeline, notifications and support.
 - Time-based cancellation quote/request workflow and refund status transparency.
-- Trip planner with destination, trip duration and travel-style choices; suggested daily itinerary, nearby inspiration, hotel and bus inventory lookup, editable NPR budget estimate, spending tracker, save/share/print options.
+- Trip planner with destination, trip duration and travel-style choices; destination-specific daily outlines and nearby highlights across the expanded Nepal catalogue, hotel and bus inventory lookup, editable NPR budget estimate, spending tracker, save/share/print options.
 - Destination discovery, map pins, regional filtering and photo gallery.
 - Marketplace discovery for stays, local rides and experiences.
 - Optional passenger trip-location sharing, explicitly consented, time-limited and restricted to the assigned operator workflow.
@@ -82,7 +82,8 @@ Remote Himalayan and protected-area destinations can require flights, permits, g
 - Destination images are inspiration; where a specific local photo is not available, the interface may use a neutral visual treatment rather than claim an unrelated image depicts that exact place.
 - Operator-uploaded fleet photographs are not public until approved through moderation.
 - Photo attribution and licence notes are published at `/image-credits.html`.
-- The current repository includes still images and animated interface effects; it does not yet include a curated local destination video library. External video embeds should only be added after rights, source reliability, mobile performance and privacy are reviewed.
+- The gallery includes 16 still images and one embedded video hosted by YouTube: “NEPAL HIMALAYA | A Breathtaking Journey Through the Peaks” from the official Nepal Tourism Board channel. The video is embedded using youtube-nocookie, lazy loading and no autoplay; YouTube may still process playback data when loaded.
+- Added Panauti (Tibtak01, CC BY-SA 3.0), Ghandruk village (Peretz Partensky, CC BY-SA 2.0) and Phoksundo Lake (Passangdolpo, CC BY-SA 4.0). Attribution and licence links are on `/image-credits.html`.
 - Use responsive image sizing, lazy loading, meaningful alt text, fallbacks and reduced-motion support. Avoid autoplay video with sound.
 
 ## 7. Architecture and repository map

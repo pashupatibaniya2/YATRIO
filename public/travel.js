@@ -6,7 +6,7 @@ async function loadMarketplace(){
   const data = await r.json();
   if(!r.ok) throw new Error(data.error || "Marketplace could not load");
   document.getElementById("categories").innerHTML = data.categories.map(c => '<a class="cat cat-'+esc(c.slug)+'" href="'+(c.slug==="buses"?"/":"/explore.html?category="+c.slug)+'"><div class="catphoto" aria-hidden="true"></div><div class="caticon">'+(icons[c.slug]||"✦")+'</div><h3>'+esc(c.name)+'</h3><p>'+esc(c.description)+'</p><span class="catfoot">'+(c.slug==="buses"?"SEARCH BUS JOURNEYS →":"PARTNER NETWORK OPEN · "+c.verified_providers+" VERIFIED")+'</span></a>').join("");
-  const destinationPhotos={kathmandu:"/images/kathmandu.jpg",pokhara:"/images/pokhara.jpg",chitwan:"/images/chitwan.jpg",lumbini:"/images/lumbini.jpg",dharan:"/images/dharan.jpg",ilam:"/images/ilam.jpg",janakpur:"/images/janakpur.jpg",biratnagar:"/images/biratnagar.jpg","rara-lake":"/images/rara-lake.jpg",khaptad:"/images/khaptad.jpg","api-nampa":"/images/api-himal.jpg"};
+  const destinationPhotos={kathmandu:"/images/kathmandu.jpg",pokhara:"/images/pokhara.jpg",chitwan:"/images/chitwan.jpg",lumbini:"/images/lumbini.jpg",dharan:"/images/dharan.jpg",ilam:"/images/ilam.jpg",janakpur:"/images/janakpur.jpg",biratnagar:"/images/biratnagar.jpg","rara-lake":"/images/rara-lake.jpg",khaptad:"/images/khaptad.jpg","api-nampa":"/images/api-himal.jpg",panauti:"/images/panauti.jpg",ghandruk:"/images/ghandruk-village.jpg","shey-phoksundo":"/images/phoksundo-lake.jpg"};
   const provincePhotos={Bagmati:"/images/kathmandu.jpg",Gandaki:"/images/pokhara.jpg",Koshi:"/images/ilam.jpg",Madhesh:"/images/janakpur.jpg",Lumbini:"/images/lumbini.jpg",Karnali:"/images/rara-lake.jpg",Sudurpashchim:"/images/khaptad.jpg"};
   window.yatrioDestinations=data.destinations;
   const mountainNames=["nagarkot","bandipur","gorkha","jomsom","mustang","manang","lukla","everest-region","rara-lake","bhedetar","ilam"];
@@ -42,6 +42,9 @@ async function loadMarketplace(){
     {src:"/images/rara-lake.jpg",title:"Rara Lake",type:"Destination photo · Karnali",alt:"Rara Lake in Nepal"},
     {src:"/images/khaptad.jpg",title:"Khaptad National Park",type:"Destination photo · Sudurpashchim",alt:"Misty landscape in Khaptad National Park"},
     {src:"/images/api-himal.jpg",title:"Api Himal",type:"Destination photo · Sudurpashchim",alt:"Api Himal mountain landscape"},
+    {src:"/images/panauti.jpg",title:"Panauti",type:"Destination photo · Bagmati",alt:"Historic street and temple area in Panauti"},
+    {src:"/images/ghandruk-village.jpg",title:"Ghandruk",type:"Destination photo · Gandaki",alt:"Ghandruk village in the Annapurna region"},
+    {src:"/images/phoksundo-lake.jpg",title:"Shey Phoksundo Lake",type:"Destination photo · Karnali",alt:"Phoksundo Lake in Dolpo"},
     {src:"/images/fleet-demo-exterior.jpg",title:"Coach exterior",type:"Illustrative fleet demo",alt:"Illustrative intercity bus exterior"},
     {src:"/images/fleet-demo-interior.jpg",title:"Coach interior",type:"Illustrative fleet demo",alt:"Illustrative intercity coach passenger interior"}
   ];
