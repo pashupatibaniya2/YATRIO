@@ -4,7 +4,7 @@
 **Live site:** https://yatrio-nepal-bus.hatchable.site  
 **Project console:** https://hatchable.com/console/projects/yatrio-nepal-bus  
 **Product category:** Nepal-focused bus booking, trip planning and travel-services marketplace.  
-**Current release at time of this document:** V159 (individual destination guides for all 61 Nepal destinations, including attractions, suggested duration, seasonal guidance, indicative daily budgets, map/video links, trip planning and destination-filtered traveller stories).
+**Current release at time of this document:** V161 (individual destination guides for all 61 Nepal destinations, reusing the existing detailed editorial descriptions for 50 places and catalogue highlights for the remaining destinations, plus attractions, suggested duration, seasonal guidance, indicative daily budgets, map/video links, trip planning and destination-filtered traveller stories).
 
 ---
 
