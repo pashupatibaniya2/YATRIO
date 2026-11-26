@@ -4,7 +4,7 @@
 **Live site:** https://yatrio-nepal-bus.hatchable.site  
 **Project console:** https://hatchable.com/console/projects/yatrio-nepal-bus  
 **Product category:** Nepal-focused bus booking, trip planning and travel-services marketplace.  
-**Current release at time of this document:** V154 (illustrated pilot operator onboarding kit with credited fleet-photo examples, responsive layout and print styling).
+**Current release at time of this document:** V155 (destination-linked YouTube previews and moderated traveller photo-story community with consent, verified-journey labels, reporting and admin review).
 
 ---
 
@@ -34,7 +34,9 @@ The platform also provides workspaces for transport operators, marketplace partn
 - Passenger dashboard, booking history, booking timeline, notifications and support.
 - Time-based cancellation quote/request workflow and refund status transparency.
 - Trip planner with destination, trip duration and travel-style choices; destination-specific daily outlines and nearby highlights across the expanded Nepal catalogue, hotel and bus inventory lookup, editable NPR budget estimate, spending tracker, save/share/print options.
-- Destination discovery, map pins, regional filtering and photo gallery.
+- Destination discovery, map pins, regional filtering and photo gallery, with destination-specific YouTube discovery links and selected official Nepal Tourism Board video embeds.
+- Traveller community at /community.html: authenticated photo/story submissions, destination tags, optional public alias, privacy checks, pending moderation, public feed, user deletion and reporting. A “Completed YATRIO journey” marker is assigned only when a completed booking matches the destination; it is not self-claimed.
+- Admin moderation at /admin-community-journeys.html; public posts are hidden until approval, and reported posts return to the review queue.
 - Marketplace discovery for stays, local rides and experiences.
 - Optional passenger trip-location sharing, explicitly consented, time-limited and restricted to the assigned operator workflow.
 
@@ -89,7 +91,7 @@ Remote Himalayan and protected-area destinations can require flights, permits, g
 - Destination images are inspiration; where a specific local photo is not available, the interface may use a neutral visual treatment rather than claim an unrelated image depicts that exact place.
 - Operator-uploaded fleet photographs are not public until approved through moderation.
 - Photo attribution and licence notes are published at `/image-credits.html`.
-- The gallery includes 16 still images and one embedded video hosted by YouTube: “NEPAL HIMALAYA | A Breathtaking Journey Through the Peaks” from the official Nepal Tourism Board channel. The video is embedded using youtube-nocookie, lazy loading and no autoplay; YouTube may still process playback data when loaded.
+- The gallery includes 16 still images and the Explore Nepal page now links every destination card to place-specific YouTube search results; Bardiya has a verified Nepal Tourism Board film link. The page also retains its embedded Nepal Tourism Board Himalaya film. The gallery includes one embedded video hosted by YouTube: “NEPAL HIMALAYA | A Breathtaking Journey Through the Peaks” from the official Nepal Tourism Board channel. The video is embedded using youtube-nocookie, lazy loading and no autoplay; YouTube may still process playback data when loaded.
 - Added Panauti (Tibtak01, CC BY-SA 3.0), Ghandruk village (Peretz Partensky, CC BY-SA 2.0) and Phoksundo Lake (Passangdolpo, CC BY-SA 4.0). Attribution and licence links are on `/image-credits.html`.
 - Use responsive image sizing, lazy loading, meaningful alt text, fallbacks and reduced-motion support. Avoid autoplay video with sound.
 
