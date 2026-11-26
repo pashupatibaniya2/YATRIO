@@ -76,7 +76,7 @@ Remote Himalayan and protected-area destinations can require flights, permits, g
 
 ## 6. Visual assets and media policy
 
-- Local destination image assets currently live in `public/images/`; the gallery now includes 11 destination/location images plus two illustrative fleet images (13 total gallery items).
+- Local destination image assets currently live in `public/images/`; the gallery now includes 14 destination/location images plus two illustrative fleet images (16 total gallery items).
 - Added Rara Lake (Supermaanis), Khaptad National Park (Dwellers) and Api Himal (Mahendra177), sourced from Wikimedia Commons under CC BY-SA 4.0; their attribution and licence links are listed at `/image-credits.html`.
 - Fleet demo images are illustrative and must never be represented as an actual partner's vehicle.
 - Destination images are inspiration; where a specific local photo is not available, the interface may use a neutral visual treatment rather than claim an unrelated image depicts that exact place.
@@ -151,13 +151,13 @@ Browser geolocation requires HTTPS and explicit permission. Location sharing is 
 
 Use synthetic data only in a clearly marked test environment or isolated test records. Never use demo records to claim a real operator has been verified, a bus is actually scheduled, a payment has settled, or a refund has been issued.
 
-**V147 live smoke-test evidence:** the public marketplace API returned 61 destinations; the travel page rendered 61 destination cards and 61 Leaflet map markers; all 13 gallery images loaded with non-zero dimensions; the new Jumla itinerary fallback generated seven day cards; and the tested travel/planner pages produced zero browser page errors. An 800 px viewport check showed no horizontal overflow on the travel page. This is a focused smoke test, not a full booking/payment end-to-end certification or a complete mobile/cross-browser audit.
+**V149 live smoke-test evidence:** the public marketplace API returns 61 destinations; the travel page renders 61 destination cards and 61 Leaflet map markers; all 16 gallery images loaded with non-zero dimensions; the official Nepal Tourism Board video iframe and outbound watch link are present; and all 34 newly expanded destination profiles generated three itinerary day cards and four nearby highlights each. Ten representative destinations across all seven provinces were additionally checked for correct title and image behaviour. The tested pages produced zero browser page errors. This is a focused smoke test, not a full booking/payment end-to-end certification or a complete mobile/cross-browser audit.
 
 Recommended smoke-test sequence:
 1. Open the home page and verify bus search loads.
 2. Open `/travel.html`; search/filter destinations by each province and category.
 3. Select destination pins on the map; confirm the selected destination opens the planner.
-4. Open `/plan.html`; generate a 2-, 3- and 7-day plan for a destination with a detailed template and a newly added destination with generic itinerary fallback.
+4. Open `/plan.html`; test 2-, 3- and 7-day plans, all travel styles, and destination-specific highlights for the 34 new destination profiles. Confirm remote-area permit, guide, weather and access cautions are retained.
 5. Change travel style, starting city, budget inputs and print view.
 6. Open `/explore.html`; verify empty-state handling when no partner listings are published.
 7. Verify each local image returns HTTP 200 and has a valid image content type; check image credits.
