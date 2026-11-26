@@ -15,7 +15,7 @@ export default async function(req,res){
   (SELECT round(avg(r.rating)::numeric,1) FROM operator_reviews r WHERE r.operator_id=o.id AND r.status='published') AS average_rating,
   (SELECT count(*)::int FROM operator_reviews r WHERE r.operator_id=o.id AND r.status='published') AS review_count,
   (SELECT COALESCE(array_agg(DISTINCT a ORDER BY a),ARRAY[]::text[]) FROM buses b CROSS JOIN LATERAL unnest(COALESCE(b.amenities,ARRAY[]::text[])) a WHERE b.operator_id=o.id AND b.status='active') AS amenities
- FROM operators o WHERE o.status='approved' ORDER BY o.name LIMIT 100`);
+ FROM operators o WHERE o.status='approved' AND (SELECT count(*) FROM operator_documents d WHERE d.operator_id=o.id AND d.review_status='approved')=4 AND (SELECT count(*) FROM operator_documents d WHERE d.operator_id=o.id)=4 ORDER BY o.name LIMIT 100`);
  const operators=rows.map(o=>({...o,verified:Number(o.document_count)===4&&Number(o.approved_document_count)===4,document_verification_status:Number(o.document_count)===4&&Number(o.approved_document_count)===4?"verified":Number(o.approved_document_count)>0?"partially_verified":"not_verified",average_rating:o.average_rating===null?null:Number(o.average_rating),amenities:o.amenities||[]}));
  res.json({operators,count:operators.length,demo_data:true,notice:"Operator records, fleet listings, and service activity may include demonstration data. Ratings include published reviews from completed journeys only. Document verification reflects documents reviewed by YATRIO; it is not a guarantee of service quality."});
 }

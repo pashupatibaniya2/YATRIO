@@ -4,7 +4,7 @@ export const methods = ["GET"];
 export default async function(req,res) {
   const slug=String(req.query.slug||"").trim().toLowerCase();
   if(!/^[a-z0-9-]{2,60}$/.test(slug))return res.status(400).json({error:"A valid operator profile link is required."});
-  const found=await db.query("SELECT o.id,o.name,o.slug,o.description,o.phone,o.status,o.created_at,(SELECT count(*) FROM operator_documents d WHERE d.operator_id=o.id AND d.review_status='approved') AS approved_documents,(SELECT count(*) FROM operator_documents d WHERE d.operator_id=o.id) AS total_documents FROM operators o WHERE o.slug=$1 AND o.status='approved' LIMIT 1",[slug]);
+  const found=await db.query("SELECT o.id,o.name,o.slug,o.description,o.phone,o.status,o.created_at,(SELECT count(*) FROM operator_documents d WHERE d.operator_id=o.id AND d.review_status='approved') AS approved_documents,(SELECT count(*) FROM operator_documents d WHERE d.operator_id=o.id) AS total_documents FROM operators o WHERE o.slug=$1 AND o.status='approved' AND (SELECT count(*) FROM operator_documents d WHERE d.operator_id=o.id AND d.review_status='approved')=4 AND (SELECT count(*) FROM operator_documents d WHERE d.operator_id=o.id)=4 LIMIT 1",[slug]);
   if(!found.rows.length)return res.status(404).json({error:"This operator profile is not currently available."});
   const operator=found.rows[0];
   const buses=await db.query("SELECT b.id,b.name,b.bus_type,b.capacity,b.amenities,(SELECT count(*) FROM schedules s WHERE s.bus_id=b.id AND s.status='scheduled' AND s.departure_at>now()) AS upcoming_departures FROM buses b WHERE b.operator_id=$1 AND b.status='active' ORDER BY b.name",[operator.id]);

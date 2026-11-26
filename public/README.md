@@ -171,6 +171,7 @@ Recommended smoke-test sequence:
 ## 11. Security, privacy and reliability principles
 
 - Server-side authorization is required for every protected action; hiding a UI button is not access control.
+- Operator approval requires exactly four submitted documents, all four approved. Public bus search, operator profiles and comparison results also enforce this four-document rule so inconsistent legacy approval flags do not expose incomplete operators. Admin review surfaces flag the inconsistency without silently changing the stored operator status.
 - Validate request bodies, IDs, monetary amounts, state transitions and ownership server-side.
 - Payment callbacks must verify provider signatures/status with the provider before confirming bookings.
 - Never store merchant secrets in public JavaScript or commit them to source files.
