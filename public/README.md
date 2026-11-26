@@ -4,7 +4,7 @@
 **Live site:** https://yatrio-nepal-bus.hatchable.site  
 **Project console:** https://hatchable.com/console/projects/yatrio-nepal-bus  
 **Product category:** Nepal-focused bus booking, trip planning and travel-services marketplace.  
-**Current release at time of this document:** V158 (visible destination photography on all 61 cards using exact or clearly labelled regional images, expanded place descriptions, and destination video discovery links).
+**Current release at time of this document:** V159 (individual destination guides for all 61 Nepal destinations, including attractions, suggested duration, seasonal guidance, indicative daily budgets, map/video links, trip planning and destination-filtered traveller stories).
 
 ---
 
@@ -34,7 +34,8 @@ The platform also provides workspaces for transport operators, marketplace partn
 - Passenger dashboard, booking history, booking timeline, notifications and support.
 - Time-based cancellation quote/request workflow and refund status transparency.
 - Trip planner with destination, trip duration and travel-style choices; destination-specific daily outlines and nearby highlights across the expanded Nepal catalogue, hotel and bus inventory lookup, editable NPR budget estimate, spending tracker, save/share/print options.
-- Destination discovery across 61 places, map pins, regional filtering and photo gallery. Every destination card now renders a real local photo (exact destination photo where available; otherwise clearly labelled regional inspiration) and a longer visitor description with practical context. Cards link to destination-specific YouTube discovery results; selected official Nepal Tourism Board videos are also available.
+- Destination discovery across 61 places, map pins, regional filtering and visible destination photography. Every destination card links to `/destination.html?place=<slug>`, a reusable detailed guide with a longer description, attractions/highlights, suggested stay, seasonal travel window, indicative NPR daily budget, OpenStreetMap link, YouTube video discovery, trip-planner link and stay/experience/bus search shortcuts. Exact photos are used where available; otherwise the page labels the image as regional inspiration.
+- Destination guides load approved traveller stories filtered to the selected place. Stories remain hidden until community moderation approves them. The community feed API accepts an optional exact destination filter.
 - Traveller community at /community.html: authenticated photo/story submissions, destination tags, optional public alias, privacy checks (including a reminder to remove photo GPS/EXIF metadata), pending moderation, public feed, user deletion and reporting. A “Completed YATRIO journey” marker is assigned only when a completed booking matches the destination; it is not self-claimed.
 - Admin moderation at /admin-community-journeys.html; public posts are hidden until approval, and reported posts return to the review queue.
 - Marketplace discovery for stays, local rides and experiences.
@@ -109,7 +110,9 @@ YATRIO is hosted on Hatchable with a dedicated PostgreSQL database and serverles
 
 Important public pages include:
 - `/` — bus search/home
-- `/travel.html` — destination discovery, map, photo gallery and partner application
+- `/travel.html` — destination discovery, map, destination cards and partner application
+- `/destination.html?place=<slug>` — detailed guide for any of the 61 destination slugs
+- `/community.html` — traveller photo and story community
 - `/plan.html` — trip planner
 - `/explore.html` — stays, rides and experiences marketplace
 - `/fleet-showroom.html` — fleet showcase
@@ -158,7 +161,7 @@ Browser geolocation requires HTTPS and explicit permission. Location sharing is 
 
 ## 10. Local QA and safe demonstration testing
 
-**V157 destination card imagery and descriptions:** `/travel.html` now displays real image elements within destination cards rather than relying on CSS-only background artwork. Exact-location assets are used where available; province-level fallback images are labelled “Regional photo · inspiration”. Each of the 61 cards includes a longer description, and all images have alt text, lazy loading and a responsive cover crop.\n\n**V154 illustrated pilot onboarding kit:** enhanced `/operator-pilot-kit.html` with a dedicated photo-preparation guide showing illustrative fleet exterior and interior examples. The images are explicitly labelled as examples, not verified partner vehicles; their attribution is maintained on `/image-credits.html`. Responsive mobile and print layouts include the photo guide. It includes four-document preparation, company contacts, actual bus/fleet evidence, driver checks, a first-departure worksheet, and security/privacy reminders. Linked from `/become-a-partner.html`. The worksheet does not submit or persist applicant data and does not change operator status; all official application and document upload steps remain in the authenticated operator portal.
+**V159 destination detail guides:** Added a single reusable destination detail page for all 61 places. Guides include place-specific editorial content for key destinations, attraction highlights for the wider catalogue, suggested stay lengths, seasonal windows, indicative NPR daily budget ranges, map links, YouTube discovery links, itinerary generation, live bus/stay/experience search shortcuts and a destination-filtered moderated traveller-story feed. Budget ranges are planning estimates only, not live supplier prices.\n\n**V157 destination card imagery and descriptions:** `/travel.html` now displays real image elements within destination cards rather than relying on CSS-only background artwork. Exact-location assets are used where available; province-level fallback images are labelled “Regional photo · inspiration”. Each of the 61 cards includes a longer description, and all images have alt text, lazy loading and a responsive cover crop.\n\n**V154 illustrated pilot onboarding kit:** enhanced `/operator-pilot-kit.html` with a dedicated photo-preparation guide showing illustrative fleet exterior and interior examples. The images are explicitly labelled as examples, not verified partner vehicles; their attribution is maintained on `/image-credits.html`. Responsive mobile and print layouts include the photo guide. It includes four-document preparation, company contacts, actual bus/fleet evidence, driver checks, a first-departure worksheet, and security/privacy reminders. Linked from `/become-a-partner.html`. The worksheet does not submit or persist applicant data and does not change operator status; all official application and document upload steps remain in the authenticated operator portal.
 
 Use synthetic data only in a clearly marked test environment or isolated test records. Never use demo records to claim a real operator has been verified, a bus is actually scheduled, a payment has settled, or a refund has been issued.
 
