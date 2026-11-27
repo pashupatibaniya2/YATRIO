@@ -4,7 +4,7 @@
 **Live site:** https://yatrio-nepal-bus.hatchable.site  
 **Project console:** https://hatchable.com/console/projects/yatrio-nepal-bus  
 **Product category:** Nepal-focused bus booking, trip planning and travel-services marketplace.  
-**Current release at time of this document:** V165 (destination guides now embed the official Nepal Tourism Board Bardiya film on Bardiya's page and a clearly labelled Nepal-wide NTB preview on other pages, with destination-specific YouTube discovery links; live local experience cards query published partner listings with upcoming availability; responsive layouts and explicit no-listing states prevent suggested attractions being mistaken for bookable services).
+**Current release at time of this document:** V166 (homepage expanded with a searchable, province-filtered directory of all 61 destinations linked to individual guides; images shown only for the 18 place-matched photographs, with neutral placeholders for other destinations; all 48 public HTML pages and 23 public JavaScript assets passed HTTP/syntax checks at release review; 12 intentional public-route lint warnings remain documented).
 
 ---
 
