@@ -4,7 +4,7 @@
 **Live site:** https://yatrio-nepal-bus.hatchable.site  
 **Project console:** https://hatchable.com/console/projects/yatrio-nepal-bus  
 **Product category:** Nepal-focused bus booking, trip planning and travel-services marketplace.  
-**Current release at time of this document:** V163 (unified all 61 destination coordinates into one shared source used by the Explore Nepal map and individual destination guides; added district/area labels and embedded OpenStreetMap previews to each guide; added a Nepal Tourism Board reference link).
+**Current release at time of this document:** V164 (shared canonical location dataset for all 61 destinations, district/area labels, guide-level OpenStreetMap previews, NTB reference links, and verified coordinate refinements for Sinja Valley and Koshi Tappu). Map pins are representative destination-area centres, not exact property or trailhead navigation points.
 
 ---
 

@@ -6,7 +6,7 @@ window.YATRIO_DESTINATION_LOCATIONS = {
     bhaktapur:[27.6710,85.4298],lalitpur:[27.6588,85.3247],nagarkot:[27.7170,85.5200],bandipur:[27.9380,84.4060],
     gorkha:[28.0000,84.6330],jomsom:[28.7800,83.7200],mustang:[29.1800,83.9600],manang:[28.6667,84.0167],
     lukla:[27.6870,86.7310],"everest-region":[27.8069,86.7140],"rara-lake":[29.5300,82.0800],bardiya:[28.4000,81.3000],
-    "koshi-tappu":[26.5700,87.0000],hetauda:[27.4280,85.0320],tansen:[27.8670,83.5460],nepalgunj:[28.0500,81.6170],
+    "koshi-tappu":[26.6500,87.0000],hetauda:[27.4280,85.0320],tansen:[27.8670,83.5460],nepalgunj:[28.0500,81.6170],
     dhangadhi:[28.6950,80.5930],bhedetar:[26.9900,87.3300],butwal:[27.7000,83.4500],
     dhulikhel:[27.6220,85.5420],panauti:[27.5840,85.5160],kirtipur:[27.6780,85.2770],pharping:[27.6120,85.2640],
     ghandruk:[28.3750,83.8060],ghorepani:[28.4000,83.6900],besisahar:[28.2310,84.3760],damauli:[27.9760,84.2700],
@@ -14,7 +14,7 @@ window.YATRIO_DESTINATION_LOCATIONS = {
     taplejung:[27.3540,87.6700],pathibhara:[27.4300,87.7700],bardibas:[26.9840,85.9190],jaleshwar:[26.6480,85.8000],
     malangwa:[26.8580,85.5600],gaur:[26.7650,85.2780],tilaurakot:[27.5740,83.0520],ramgram:[27.5300,83.6670],
     devdaha:[27.6350,83.5160],kapilvastu:[27.5500,83.0500],swargadwari:[28.0800,82.7400],jumla:[29.2750,82.1830],
-    "sinja-valley":[29.2750,82.0000],"shey-phoksundo":[29.2000,82.9500],dolpo:[29.0000,82.8000],simikot:[29.9670,81.8180],
+    "sinja-valley":[29.3244,81.9825],"shey-phoksundo":[29.2000,82.9500],dolpo:[29.0000,82.8000],simikot:[29.9670,81.8180],
     khaptad:[29.2500,81.1000],dadeldhura:[29.3000,80.5800],tikapur:[28.5280,81.1170],shuklaphanta:[28.8500,80.2500],
     "api-nampa":[29.8500,80.7000],doti:[29.2600,80.9400]
   };
