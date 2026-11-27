@@ -4,7 +4,7 @@
 **Live site:** https://yatrio-nepal-bus.hatchable.site  
 **Project console:** https://hatchable.com/console/projects/yatrio-nepal-bus  
 **Product category:** Nepal-focused bus booking, trip planning and travel-services marketplace.  
-**Current release at time of this document:** V162 (destination image matching audit: removed repeated province-level fallback photos, mapped photographs only to the place they depict, corrected Bhedetar attribution, added licensed Bhaktapur, Nagarkot, Everest Region and Bardiya photos, and removed repeated hero/gallery image reuse. The destination catalogue now has 18 distinct place-matched photographs; other destinations show a clearly labelled photo-coming-soon illustration.)
+**Current release at time of this document:** V163 (unified all 61 destination coordinates into one shared source used by the Explore Nepal map and individual destination guides; added district/area labels and embedded OpenStreetMap previews to each guide; added a Nepal Tourism Board reference link).
 
 ---
 
