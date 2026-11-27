@@ -108,7 +108,7 @@ footer{background:#102a43;color:#d6e4e9;padding:36px 0}.foot{display:flex;justif
 <div class="route-map-shell">
 <div class="route-map-copy"><span class="map-eyebrow">Your next journey starts here</span><h3>From the valley<br>to the Himalayas.</h3><p>Tap any destination on the map to select a popular route from Kathmandu. You can change the departure city and date before searching.</p><div class="map-legend"><span><i class="legend-dot origin"></i> Kathmandu hub</span><span><i class="legend-dot destination"></i> Destinations</span></div><div class="map-selected" id="mapSelected">Select a destination on the map</div></div>
 <div class="route-map-visual">
-<svg class="nepal-map" viewBox="0 0 900 390" role="img" aria-label="Illustrative map of Nepal showing popular routes from Kathmandu to Pokhara, Chitwan, Butwal, Biratnagar and Dharan">
+<svg class="nepal-map" viewBox="0 0 900 390" role="img" aria-label="Illustrative map of Nepal with 61 selectable destination markers across all seven provinces and suggested journey connections">
 <defs><linearGradient id="land" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e4f4ed"/><stop offset="1" stop-color="#b6ddd2"/></linearGradient><linearGradient id="routeGlow"><stop stop-color="#18a999"/><stop offset="1" stop-color="#f2b84b"/></linearGradient><filter id="mapShadow"><feGaussianBlur stdDeviation="8"/></filter></defs>
 <path class="nepal-land" d="M52 188 L115 151 180 160 232 128 296 143 354 112 414 131 476 105 536 130 596 111 653 139 718 124 780 159 850 174 822 211 764 222 712 248 647 237 591 267 527 248 465 276 400 251 344 278 283 251 220 272 165 238 98 242Z" fill="url(#land)" stroke="#8bc9ba" stroke-width="3"/>
 <g class="map-topography" fill="none" stroke="#fff" stroke-width="2" opacity=".75"><path d="M90 190 Q230 110 360 168 T650 166 T820 190"/><path d="M110 215 Q250 145 390 202 T690 195 T810 215"/><path d="M180 235 Q320 175 470 235 T740 220"/></g>
@@ -270,4 +270,4 @@ function closeModal(){if(fonepayPollTimer){clearInterval(fonepayPollTimer);fonep
 document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal()});
 searchBuses();
 </script>
-<script src="/yatrio-motion.js" defer></script><script type="module" src="/bus3d.js"></script><script src="/visitor-reminder.js" defer></script></body></html>
+<script src="/homepage-route-map.js" defer></script><script src="/yatrio-motion.js" defer></script><script type="module" src="/bus3d.js"></script><script src="/visitor-reminder.js" defer></script></body></html>
