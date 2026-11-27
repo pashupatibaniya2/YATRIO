@@ -113,18 +113,52 @@ async function loadMarketplace(){
     if(!el||!window.L){if(detail)detail.innerHTML='<strong>Map preview unavailable</strong><p>Destination cards and trip planning are still available below.</p><a class="map-plan-link" href="/plan.html">Open trip planner ↗</a>';return;}
     const map=L.map(el,{scrollWheelZoom:false,zoomControl:true}).setView([28.25,84.1],6);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}).addTo(map);
-    const bounds=[];
+    const bounds=[],markers={};let activeRoute=null;
     data.destinations.forEach(d=>{
       const point=mapPlaces[d.slug];if(!point)return;bounds.push(point);
       const icon=L.divIcon({className:"",html:'<span class="yatrio-map-pin '+(["kathmandu","pokhara","lumbini"].includes(d.slug)?"featured":"")+'"></span>',iconSize:[23,23],iconAnchor:[11,11]});
-      const marker=L.marker(point,{icon,title:d.name,alt:"Explore "+d.name}).addTo(map);
+      const marker=L.marker(point,{icon,title:d.name,alt:"Explore "+d.name}).addTo(map);markers[d.slug]=marker;
       marker.bindTooltip(esc(d.name),{direction:"top",offset:[0,-8]});
       marker.on("click",()=>{
         detail.innerHTML='<span class="map-detail-kicker">'+esc(window.YATRIO_DESTINATION_DISTRICTS?.[d.slug]||d.province)+' · '+esc(d.province)+' Province · NEPAL</span><strong>'+esc(d.name)+'</strong><p>'+esc(d.tagline)+'</p><a class="map-plan-link" href="/destination.html?place='+encodeURIComponent(d.slug)+'">View destination guide ↗</a><a class="map-plan-link" href="/plan.html?destination='+encodeURIComponent(d.name)+'">Plan this trip ↗</a>';
       });
     });
-    if(bounds.length)map.fitBounds(bounds,{padding:[24,24],maxZoom:7});
+    const routes={
+      "eastwest":{name:"East–West Nepal",stops:[["Kakarbhitta",26.6430,88.1550],["Birtamod",26.6460,87.9940],["Itahari",26.6630,87.2740],["Biratnagar",26.4525,87.2718],["Bardibas",26.9840,85.9190],["Hetauda",27.4280,85.0320],["Chitwan",27.5750,84.5000],["Butwal",27.7000,83.4500],["Nepalgunj",28.0500,81.6170],["Dhangadhi",28.6950,80.5930],["Mahendranagar",28.9630,80.1770]]},
+      "kathmandu-pokhara":{name:"Kathmandu to Pokhara",stops:[["Kathmandu",27.7172,85.3240],["Damauli",27.9760,84.2700],["Pokhara",28.2096,83.9856]]},
+      "kathmandu-chitwan-lumbini":{name:"Kathmandu · Chitwan · Lumbini",stops:[["Kathmandu",27.7172,85.3240],["Chitwan",27.5750,84.5000],["Butwal",27.7000,83.4500],["Lumbini",27.4833,83.2760]]},
+      "kathmandu-janakpur":{name:"Kathmandu to Janakpur",stops:[["Kathmandu",27.7172,85.3240],["Bardibas",26.9840,85.9190],["Janakpur",26.7288,85.9263]]},
+      "kathmandu-ilam":{name:"Kathmandu · Dharan · Ilam",stops:[["Kathmandu",27.7172,85.3240],["Bardibas",26.9840,85.9190],["Itahari",26.6630,87.2740],["Dharan",26.8120,87.2830],["Ilam",26.9090,87.9280]]},
+      "pokhara-jomsom":{name:"Pokhara to Jomsom",stops:[["Pokhara",28.2096,83.9856],["Beni",28.3500,83.5660],["Jomsom",28.7800,83.7200]]},
+      "nepalgunj-jumla":{name:"Nepalgunj · Surkhet · Jumla",stops:[["Nepalgunj",28.0500,81.6170],["Surkhet",28.6000,81.6330],["Jumla",29.2750,82.1830]]},
+      "dhangadhi-khaptad":{name:"Dhangadhi · Khaptad · Dadeldhura",stops:[["Dhangadhi",28.6950,80.5930],["Dadeldhura",29.3000,80.5800],["Khaptad",29.2500,81.1000]]}
+    };
+    const status=document.getElementById("routeStatus"),selector=document.getElementById("nepalRouteSelect");
+    function clearRoute(){if(activeRoute){map.removeLayer(activeRoute);activeRoute=null;}}
+    async function showRoute(key){
+      clearRoute();if(!key){map.fitBounds(bounds,{padding:[24,24],maxZoom:7});status.textContent="All "+bounds.length+" destinations shown · choose a corridor to draw a road route";return;}
+      const route=routes[key];if(!route)return;status.textContent="Finding mapped road route for "+route.name+"…";selector.disabled=true;
+      const coords=route.stops.map(p=>p[2]+","+p[1]).join(";");
+      try{
+        const response=await fetch("https://router.project-osrm.org/route/v1/driving/"+coords+"?overview=full&geometries=geojson&steps=false");
+        const result=await response.json();
+        if(!response.ok||result.code!=="Ok"||!result.routes?.[0])throw new Error(result.message||"No mapped road route is available for this corridor.");
+        const line=result.routes[0];
+        activeRoute=L.geoJSON(line.geometry,{style:{color:"#e36b45",weight:5,opacity:.9}}).addTo(map);
+        const stopLayer=L.featureGroup(route.stops.map((p,i)=>L.marker([p[1],p[2]],{icon:L.divIcon({className:"",html:'<span class="yatrio-route-stop">'+(i+1)+'</span>',iconSize:[26,26],iconAnchor:[13,13]})}).bindTooltip(esc(p[0]))));
+        stopLayer.addTo(map);activeRoute.addLayer(stopLayer);
+        map.fitBounds(activeRoute.getBounds(),{padding:[28,28]});
+        const km=Math.round(line.distance/1000);
+        status.textContent=route.name+" · approx. "+km+" km mapped road distance · "+route.stops.length+" stops";
+        detail.innerHTML='<span class="map-detail-kicker">ROUTE CORRIDOR</span><strong>'+esc(route.name)+'</strong><p>'+route.stops.map(p=>esc(p[0])).join(" → ")+'</p><p class="route-distance">Approx. '+km+' km by mapped road. Actual travel time and access depend on road, weather and local conditions.</p><a class="map-plan-link" href="/plan.html?destination='+encodeURIComponent(route.stops[route.stops.length-1][0])+'">Plan this journey ↗</a>';
+      }catch(error){status.textContent="Road route unavailable for this corridor. All destination pins remain visible; check the national highway reference below.";detail.innerHTML='<span class="map-detail-kicker">ROUTE NOT AVAILABLE</span><strong>'+esc(route.name)+'</strong><p>'+esc(error.message)+'</p><a class="map-plan-link" href="https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route='+route.stops[0][1]+'%2C'+route.stops[0][2]+'%3B'+route.stops.at(-1)[1]+'%2C'+route.stops.at(-1)[2]+'" target="_blank" rel="noopener">Try external directions ↗</a>';}
+      finally{selector.disabled=false;}
+    }
+    selector?.addEventListener("change",()=>showRoute(selector.value));
+    document.getElementById("showAllNepalPins")?.addEventListener("click",()=>{selector.value="";showRoute("");detail.innerHTML='<span class="map-detail-kicker">ALL NEPAL</span><strong>'+bounds.length+' mapped destinations</strong><p>Explore destination pins across all seven provinces. Select any pin for its district, guide and trip-planning links.</p><a class="map-plan-link" href="/plan.html">Open trip planner ↗</a>';});
+    map.fitBounds(bounds,{padding:[24,24],maxZoom:7});
     document.getElementById("mapCount").textContent=bounds.length+" mapped destinations · all seven provinces";
+    status.textContent=bounds.length+" destination pins ready · choose a road corridor above";
     setTimeout(()=>map.invalidateSize(),250);
   }
   initDestinationMap();

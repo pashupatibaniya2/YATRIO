@@ -4,7 +4,7 @@
 **Live site:** https://yatrio-nepal-bus.hatchable.site  
 **Project console:** https://hatchable.com/console/projects/yatrio-nepal-bus  
 **Product category:** Nepal-focused bus booking, trip planning and travel-services marketplace.  
-**Current release at time of this document:** V166 (homepage expanded with a searchable, province-filtered directory of all 61 destinations linked to individual guides; images shown only for the 18 place-matched photographs, with neutral placeholders for other destinations; all 48 public HTML pages and 23 public JavaScript assets passed HTTP/syntax checks at release review; 12 intentional public-route lint warnings remain documented).
+**Current release at time of this document:** V167 (Explore Nepal map now includes all 61 destination pins plus eight selectable intercity and regional route corridors. Road geometry is requested from an OpenStreetMap-based routing service when available; unavailable remote routes are not drawn as invented straight lines. Route distances are estimates, not live bus schedules or road-condition guarantees. V166 homepage directory and prior release QA notes remain below).
 
 ---
 

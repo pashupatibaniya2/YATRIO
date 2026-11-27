@@ -1,5 +1,16 @@
 /* YATRIO V71 — complete photo library and interactive Nepal map */
 .nepal-map-section,.media-library{margin-top:58px}
+.route-tools{display:grid;grid-template-columns:minmax(180px,.55fr) minmax(260px,1.3fr) auto minmax(220px,1fr);gap:10px;align-items:center;margin:0 0 13px;padding:14px;background:#fff;border:1px solid #e2ebee;border-radius:14px}
+.route-tools label{font-size:12px;font-weight:800;color:#284556}
+.route-tools select{min-width:0;width:100%;padding:12px 36px 12px 12px;border:1px solid #d9e5e8;border-radius:9px;background:#fbfdfc;color:#172b3a;font:600 13px "DM Sans",sans-serif}
+.route-tools button{border:0;border-radius:9px;padding:12px 14px;background:#102a43;color:#fff;font-weight:800;font-size:12px;cursor:pointer}
+.route-tools button:hover{background:#147d73}
+.route-tools button:focus-visible,.route-tools select:focus-visible{outline:3px solid #f2b84b;outline-offset:2px}
+#routeStatus{font-size:11px;line-height:1.5;color:#607782}
+.route-disclaimer{font-size:11px;line-height:1.7;color:#718096;margin:12px 2px 0}
+.route-disclaimer a{color:#147d73;text-decoration:underline;font-weight:700}
+.yatrio-route-stop{display:grid;place-items:center;width:25px;height:25px;border:2px solid #fff;border-radius:50%;background:#e36b45;color:#fff;font-size:11px;font-weight:900;box-shadow:0 3px 10px #102a4366}
+.route-distance{margin-top:10px!important;padding-top:9px;border-top:1px solid #ffffff35}
 .map-count{display:inline-flex;align-items:center;white-space:nowrap;padding:8px 11px;border-radius:30px;background:#e8f7f4;color:#147d73;font-size:10px;font-weight:800}
 .nepal-map-shell{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:14px;padding:12px;border:1px solid #e2ebee;border-radius:20px;background:#fff;box-shadow:0 16px 42px #102a4310}
 #yatrioNepalMap{height:470px;min-width:0;border-radius:14px;overflow:hidden;background:linear-gradient(145deg,#dcece6,#bdd7d2)}
@@ -21,6 +32,6 @@
 .media-card-copy span{display:block;margin-top:4px;font-size:10px;line-height:1.45;color:#718096}
 .media-note{font-size:11px;line-height:1.6;color:#718096;margin:14px 0 0}
 .media-note a{color:#148779;text-decoration:underline;font-weight:700}
-@media(max-width:950px){.media-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.nepal-map-shell{grid-template-columns:1fr}.map-detail{min-height:170px}}
-@media(max-width:620px){.media-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#yatrioNepalMap{height:360px}.nepal-map-shell{padding:8px}.media-card img{height:120px}.sectionhead{align-items:flex-start}}
+@media(max-width:950px){.media-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.nepal-map-shell{grid-template-columns:1fr}.map-detail{min-height:170px}.route-tools{grid-template-columns:1fr 2fr}.route-tools button{justify-self:start}}
+@media(max-width:620px){.media-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#yatrioNepalMap{height:360px}.nepal-map-shell{padding:8px}.media-card img{height:120px}.sectionhead{align-items:flex-start}.route-tools{grid-template-columns:1fr;gap:8px}.route-tools button{width:100%}.route-tools select{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.media-card{transition:none}}
