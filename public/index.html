@@ -270,4 +270,25 @@ function closeModal(){if(fonepayPollTimer){clearInterval(fonepayPollTimer);fonep
 document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal()});
 searchBuses();
 </script>
-<script src="/homepage-route-map.js" defer></script><script src="/yatrio-motion.js" defer></script><script type="module" src="/bus3d.js"></script><script src="/visitor-reminder.js" defer></script></body></html>
+<script src="/homepage-route-map.js" defer></script><script src="/yatrio-motion.js" defer></script><script type="module" src="/bus3d.js"></script><script src="/visitor-reminder.js" defer></script><script>
+(function(){
+  function applyYatrioMapSearch(){
+    const params=new URLSearchParams(window.location.search);
+    if(!params.has("source")||params.get("source")!=="map")return;
+    const from=params.get("from"),to=params.get("to"),date=params.get("date");
+    function setPlace(id,value){
+      const select=document.getElementById(id);if(!select||!value)return;
+      let option=Array.from(select.options).find(item=>item.value.toLowerCase()===value.toLowerCase());
+      if(!option){option=document.createElement("option");option.value=value;option.textContent=value+" · selected map destination";select.add(option);}
+      select.value=option.value;
+    }
+    setPlace("from",from);setPlace("to",to);
+    const dateField=document.getElementById("date");
+    if(dateField&&date&&/^\d{4}-\d{2}-\d{2}$/.test(date)){dateField.min=dateField.min||date;dateField.value=date;}
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",applyYatrioMapSearch);
+  else applyYatrioMapSearch();
+  window.addEventListener("load",applyYatrioMapSearch);
+})();
+</script>
+</body></html>
