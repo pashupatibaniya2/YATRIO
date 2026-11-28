@@ -4,7 +4,7 @@
 **Live site:** https://yatrio-nepal-bus.hatchable.site  
 **Project console:** https://hatchable.com/console/projects/yatrio-nepal-bus  
 **Product category:** Nepal-focused bus booking, trip planning and travel-services marketplace.  
-**Current release at time of this document:** V173 (journey map selection stabilised: origin and destination dropdowns are the primary selection method, map pins are optional; a GPS current-location button can set the origin with permission, road preview uses GPS coordinates, and bus-search origin is labelled as the nearest mapped destination approximation. V169 custom two-point journey features remain, with the date and selected places handed into search. Travellers can select origin and destination by clicking map pins or using searchable place lists, choose a date, preview mapped road geometry where available, and transfer the chosen places/date into bus search. Remote/highland places show an access advisory for local jeep, trekking, permits, flights and seasonal checks; no bus service is implied. Existing eight suggested route corridors remain available. Road geometry is a planning estimate, not a live bus schedule, official bus route or road-condition guarantee. V166 homepage directory and prior release QA notes remain below).
+**Current release at time of this document:** V175 (saved-trip public share links now expire after 30 days; expired links are rejected and owners can revoke links. Security regression checks cover anonymous/member/admin access gates and customer-owned record query patterns. See the Security & Release Readiness section below. V173 journey map selection stabilised: origin and destination dropdowns are the primary selection method, map pins are optional; a GPS current-location button can set the origin with permission, road preview uses GPS coordinates, and bus-search origin is labelled as the nearest mapped destination approximation. V169 custom two-point journey features remain, with the date and selected places handed into search. Travellers can select origin and destination by clicking map pins or using searchable place lists, choose a date, preview mapped road geometry where available, and transfer the chosen places/date into bus search. Remote/highland places show an access advisory for local jeep, trekking, permits, flights and seasonal checks; no bus service is implied. Existing eight suggested route corridors remain available. Road geometry is a planning estimate, not a live bus schedule, official bus route or road-condition guarantee. V166 homepage directory and prior release QA notes remain below).
 
 ---
 
@@ -196,6 +196,10 @@ Recommended smoke-test sequence:
 - Keep audit trails for verification, policy and refund decisions.
 - Use rate limits, input limits and monitoring for public endpoints.
 - Maintain backups and a tested rollback/recovery process.
+- Saved-trip public share links are time-limited to 30 days and can be revoked by their owner. Shared snapshots contain itinerary fields only, not traveller profile or emergency-contact fields.
+- Security regression checks must exercise anonymous, signed-in customer, operator and administrator access separately. Customer-owned queries must always bind to the authenticated user identity.
+- Treat security response headers (including a restrictive Content-Security-Policy and Permissions-Policy) as a hosting-layer configuration task; do not assume HTML meta tags provide equivalent protection.
+- Use the OWASP Application Security Verification Standard (ASVS) as a verification checklist, not as a certification claim.
 
 ## 12. Known launch blockers and limitations
 
