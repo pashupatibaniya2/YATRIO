@@ -113,13 +113,56 @@ async function loadMarketplace(){
     if(!el||!window.L){if(detail)detail.innerHTML='<strong>Map preview unavailable</strong><p>Destination cards and trip planning are still available below.</p><a class="map-plan-link" href="/plan.html">Open trip planner ↗</a>';return;}
     const map=L.map(el,{scrollWheelZoom:false,zoomControl:true}).setView([28.25,84.1],6);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}).addTo(map);
-    const bounds=[],markers={};let activeRoute=null;
+    const bounds=[],markers={};let activeRoute=null,journeyLine=null,journeyFrom=null,journeyTo=null;
+    const fromSelect=document.getElementById("journeyFrom"),toSelect=document.getElementById("journeyTo"),dateInput=document.getElementById("journeyDate"),stepLabel=document.getElementById("journeyStep"),guidance=document.getElementById("journeyGuidance"),searchJourney=document.getElementById("searchJourney");
+    const remotePlaces=new Set(["mustang","manang","lukla","everest-region","rara-lake","jomsom","ghandruk","ghorepani","taplejung","pathibhara","jumla","sinja-valley","shey-phoksundo","dolpo","simikot","khaptad","api-nampa","swargadwari"]);
+    const todayNepal=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kathmandu",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+    if(dateInput){dateInput.min=todayNepal;dateInput.value=todayNepal;}
+    const destinationBySlug=Object.fromEntries(data.destinations.map(d=>[d.slug,d]));
+    function fillJourneySelect(select){if(!select)return;select.innerHTML='<option value="">Choose a place</option>'+data.destinations.map(d=>'<option value="'+esc(d.slug)+'">'+esc(d.name)+' · '+esc(d.province)+'</option>').join("");}
+    fillJourneySelect(fromSelect);fillJourneySelect(toSelect);
+    function updateJourneyState(){
+      if(stepLabel)stepLabel.textContent=journeyFrom?(journeyTo?"✓ Two places selected":"2 · Choose destination"):"1 · Choose origin";
+      if(fromSelect)fromSelect.value=journeyFrom||"";if(toSelect)toSelect.value=journeyTo||"";
+      if(searchJourney)searchJourney.disabled=!(journeyFrom&&journeyTo&&journeyFrom!==journeyTo);
+      Object.entries(markers).forEach(([slug,marker])=>{const node=marker.getElement()?.querySelector(".yatrio-map-pin");if(node){node.classList.toggle("origin",slug===journeyFrom);node.classList.toggle("destination",slug===journeyTo);}});
+      if(journeyFrom&&journeyTo){const a=destinationBySlug[journeyFrom],b=destinationBySlug[journeyTo];const remote=remotePlaces.has(journeyFrom)||remotePlaces.has(journeyTo);guidance.innerHTML='<strong>'+esc(a.name)+' → '+esc(b.name)+'</strong> · '+(remote?'Remote/highland access: a bus may not reach the destination. Check local jeep, trekking, permit, flight and seasonal arrangements.':'Road access may be available, but bus service is only shown if a verified operator has a scheduled departure.')+' Select Preview journey to request a mapped road connection.';}
+      else if(journeyFrom){guidance.textContent="Origin: "+destinationBySlug[journeyFrom].name+". Now choose your destination on the map or from the list.";}
+      else guidance.textContent="Select an origin and destination to see road access guidance and search options. A route preview is not a bus schedule.";
+    }
+    function selectJourneyPlace(slug){
+      if(!journeyFrom||journeyTo){journeyFrom=slug;journeyTo=null;}
+      else if(slug!==journeyFrom)journeyTo=slug;
+      updateJourneyState();
+    }
+    fromSelect?.addEventListener("change",()=>{journeyFrom=fromSelect.value||null;journeyTo=journeyTo===journeyFrom?null:journeyTo;updateJourneyState();});
+    toSelect?.addEventListener("change",()=>{journeyTo=toSelect.value||null;updateJourneyState();});
+    document.getElementById("previewJourney")?.addEventListener("click",async()=>{
+      if(!journeyFrom||!journeyTo||journeyFrom===journeyTo){guidance.textContent="Choose two different destinations first.";return;}
+      if(journeyLine){map.removeLayer(journeyLine);journeyLine=null;}
+      const a=mapPlaces[journeyFrom],b=mapPlaces[journeyTo],remote=remotePlaces.has(journeyFrom)||remotePlaces.has(journeyTo);
+      if(remote){guidance.innerHTML='<strong>Remote access advisory:</strong> this journey is not represented as a guaranteed bus road. Check local jeep/flight/trek arrangements, permits, weather and seasonal access. You can still open the trip planner.';map.fitBounds([a,b],{padding:[35,35]});return;}
+      guidance.textContent="Requesting mapped road geometry…";
+      try{
+        const response=await fetch("https://router.project-osrm.org/route/v1/driving/"+a[1]+","+a[0]+";"+b[1]+","+b[0]+"?overview=full&geometries=geojson&steps=false");
+        const result=await response.json();if(!response.ok||result.code!=="Ok"||!result.routes?.[0])throw new Error("No routable road connection returned for these places.");
+        const line=result.routes[0];journeyLine=L.geoJSON(line.geometry,{style:{color:"#e36b45",weight:5,opacity:.92}}).addTo(map);
+        map.fitBounds(journeyLine.getBounds(),{padding:[32,32]});
+        guidance.innerHTML='<strong>Mapped road estimate: '+Math.round(line.distance/1000)+' km.</strong> Route geometry is an OpenStreetMap-based driving estimate, not an official bus route, road-condition report or guaranteed travel time.';
+      }catch(error){guidance.textContent="Road preview unavailable: "+error.message+" Destination pins remain available; check local access before travel.";}
+    });
+    searchJourney?.addEventListener("click",()=>{
+      if(!journeyFrom||!journeyTo)return;
+      const a=destinationBySlug[journeyFrom],b=destinationBySlug[journeyTo],date=dateInput?.value||todayNepal;
+      location.href="/?from="+encodeURIComponent(a.name)+"&to="+encodeURIComponent(b.name)+"&date="+encodeURIComponent(date)+"&source=map";
+    });
     data.destinations.forEach(d=>{
       const point=mapPlaces[d.slug];if(!point)return;bounds.push(point);
       const icon=L.divIcon({className:"",html:'<span class="yatrio-map-pin '+(["kathmandu","pokhara","lumbini"].includes(d.slug)?"featured":"")+'"></span>',iconSize:[23,23],iconAnchor:[11,11]});
       const marker=L.marker(point,{icon,title:d.name,alt:"Explore "+d.name}).addTo(map);markers[d.slug]=marker;
       marker.bindTooltip(esc(d.name),{direction:"top",offset:[0,-8]});
       marker.on("click",()=>{
+        selectJourneyPlace(d.slug);
         detail.innerHTML='<span class="map-detail-kicker">'+esc(window.YATRIO_DESTINATION_DISTRICTS?.[d.slug]||d.province)+' · '+esc(d.province)+' Province · NEPAL</span><strong>'+esc(d.name)+'</strong><p>'+esc(d.tagline)+'</p><a class="map-plan-link" href="/destination.html?place='+encodeURIComponent(d.slug)+'">View destination guide ↗</a><a class="map-plan-link" href="/plan.html?destination='+encodeURIComponent(d.name)+'">Plan this trip ↗</a>';
       });
     });
