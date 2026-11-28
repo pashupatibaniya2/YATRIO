@@ -113,7 +113,7 @@ async function loadMarketplace(){
     if(!el||!window.L){if(detail)detail.innerHTML='<strong>Map preview unavailable</strong><p>Destination cards and trip planning are still available below.</p><a class="map-plan-link" href="/plan.html">Open trip planner ↗</a>';return;}
     const map=L.map(el,{scrollWheelZoom:false,zoomControl:true}).setView([28.25,84.1],6);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}).addTo(map);
-    const bounds=[],markers={};let activeRoute=null,journeyLine=null,journeyFrom=null,journeyTo=null;
+    const bounds=[],markers={};let activeRoute=null,journeyLine=null,journeyFrom=null,journeyTo=null,currentGpsOrigin=null;
     const fromSelect=document.getElementById("journeyFrom"),toSelect=document.getElementById("journeyTo"),dateInput=document.getElementById("journeyDate"),stepLabel=document.getElementById("journeyStep"),guidance=document.getElementById("journeyGuidance"),searchJourney=document.getElementById("searchJourney");
     const remotePlaces=new Set(["mustang","manang","lukla","everest-region","rara-lake","jomsom","ghandruk","ghorepani","taplejung","pathibhara","jumla","sinja-valley","shey-phoksundo","dolpo","simikot","khaptad","api-nampa","swargadwari"]);
     const todayNepal=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kathmandu",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
@@ -125,23 +125,36 @@ async function loadMarketplace(){
       if(stepLabel)stepLabel.textContent=journeyFrom?(journeyTo?"✓ Two places selected":"2 · Choose destination"):"1 · Choose origin";
       if(fromSelect)fromSelect.value=journeyFrom||"";if(toSelect)toSelect.value=journeyTo||"";
       if(searchJourney)searchJourney.disabled=!(journeyFrom&&journeyTo&&journeyFrom!==journeyTo);
-      Object.entries(markers).forEach(([slug,marker])=>{const node=marker.getElement()?.querySelector(".yatrio-map-pin");if(node){node.classList.toggle("origin",slug===journeyFrom);node.classList.toggle("destination",slug===journeyTo);}});
       if(journeyFrom&&journeyTo){const a=destinationBySlug[journeyFrom],b=destinationBySlug[journeyTo];const remote=remotePlaces.has(journeyFrom)||remotePlaces.has(journeyTo);guidance.innerHTML='<strong>'+esc(a.name)+' → '+esc(b.name)+'</strong> · '+(remote?'Remote/highland access: a bus may not reach the destination. Check local jeep, trekking, permit, flight and seasonal arrangements.':'Road access may be available, but bus service is only shown if a verified operator has a scheduled departure.')+' Select Preview journey to request a mapped road connection.';}
-      else if(journeyFrom){guidance.textContent="Origin: "+destinationBySlug[journeyFrom].name+". Now choose your destination on the map or from the list.";}
-      else guidance.textContent="Select an origin and destination to see road access guidance and search options. A route preview is not a bus schedule.";
+      else if(journeyFrom){guidance.textContent="Origin: "+destinationBySlug[journeyFrom].name+". Now choose destination from dropdown or tap a map pin.";}
+      else guidance.textContent="Choose starting point and destination from the dropdowns. Use current location if you want GPS as your starting point.";
     }
     function selectJourneyPlace(slug){
-      if(!journeyFrom||journeyTo){journeyFrom=slug;journeyTo=null;}
-      else if(slug!==journeyFrom)journeyTo=slug;
-      updateJourneyState();
+      if(!journeyFrom){journeyFrom=slug;journeyTo=null;}
+      else if(!journeyTo&&slug!==journeyFrom){journeyTo=slug;}
+      else {journeyTo=slug;}
+      currentGpsOrigin=null;updateJourneyState();
     }
-    fromSelect?.addEventListener("change",()=>{journeyFrom=fromSelect.value||null;journeyTo=journeyTo===journeyFrom?null:journeyTo;updateJourneyState();});
+    fromSelect?.addEventListener("change",()=>{journeyFrom=fromSelect.value||null;currentGpsOrigin=null;if(journeyFrom===journeyTo)journeyTo=null;updateJourneyState();});
     toSelect?.addEventListener("change",()=>{journeyTo=toSelect.value||null;updateJourneyState();});
+    document.getElementById("useCurrentLocation")?.addEventListener("click",()=>{
+      if(!navigator.geolocation){guidance.textContent="Location is unavailable in this browser. Select your starting place from the dropdown.";return;}
+      guidance.textContent="Requesting your location permission…";
+      navigator.geolocation.getCurrentPosition(position=>{
+        const gps=[position.coords.latitude,position.coords.longitude];
+        let nearest=null,nearestDistance=Infinity;
+        for(const [slug,point] of Object.entries(mapPlaces)){const dist=map.distance(gps,point);if(dist<nearestDistance){nearestDistance=dist;nearest=slug;}}
+        currentGpsOrigin={coords:gps,nearestSlug:nearest,accuracy:position.coords.accuracy};
+        journeyFrom=nearest;if(journeyTo===nearest)journeyTo=null;
+        updateJourneyState();
+        guidance.innerHTML='<strong>Current location detected.</strong> GPS accuracy ±'+Math.round(position.coords.accuracy)+' m. For bus search, the starting place is approximated as <strong>'+esc(destinationBySlug[nearest].name)+'</strong> (nearest mapped destination, '+Math.round(nearestDistance/1000)+' km away). Preview will use your GPS coordinates.';
+      },error=>{guidance.textContent=error.code===1?"Location permission denied. Choose a start location from the dropdown.":"Could not determine your location. Please select your starting point manually.";},{enableHighAccuracy:true,timeout:12000,maximumAge:60000});
+    });
     document.getElementById("previewJourney")?.addEventListener("click",async()=>{
       if(!journeyFrom||!journeyTo||journeyFrom===journeyTo){guidance.textContent="Choose two different destinations first.";return;}
       if(journeyLine){map.removeLayer(journeyLine);journeyLine=null;}
-      const a=mapPlaces[journeyFrom],b=mapPlaces[journeyTo],remote=remotePlaces.has(journeyFrom)||remotePlaces.has(journeyTo);
-      if(remote){guidance.innerHTML='<strong>Remote access advisory:</strong> this journey is not represented as a guaranteed bus road. Check local jeep/flight/trek arrangements, permits, weather and seasonal access. You can still open the trip planner.';map.fitBounds([a,b],{padding:[35,35]});return;}
+      const a=currentGpsOrigin?.coords||mapPlaces[journeyFrom],b=mapPlaces[journeyTo],remote=remotePlaces.has(journeyFrom)||remotePlaces.has(journeyTo);
+      if(remote){guidance.innerHTML='<strong>Remote access advisory:</strong> this journey may require local jeep/flight/trek arrangements, permits, weather and seasonal checks. The map preview is not a guaranteed bus route.';map.fitBounds([a,b],{padding:[35,35]});return;}
       guidance.textContent="Requesting mapped road geometry…";
       try{
         const response=await fetch("https://router.project-osrm.org/route/v1/driving/"+a[1]+","+a[0]+";"+b[1]+","+b[0]+"?overview=full&geometries=geojson&steps=false");
@@ -154,7 +167,8 @@ async function loadMarketplace(){
     searchJourney?.addEventListener("click",()=>{
       if(!journeyFrom||!journeyTo)return;
       const a=destinationBySlug[journeyFrom],b=destinationBySlug[journeyTo],date=dateInput?.value||todayNepal;
-      location.href="/?from="+encodeURIComponent(a.name)+"&to="+encodeURIComponent(b.name)+"&date="+encodeURIComponent(date)+"&source=map";
+      const originName=currentGpsOrigin?"Current location (near "+a.name+")":a.name;
+      location.href="/?from="+encodeURIComponent(originName)+"&to="+encodeURIComponent(b.name)+"&date="+encodeURIComponent(date)+"&source=map";
     });
     data.destinations.forEach(d=>{
       const point=mapPlaces[d.slug];if(!point)return;bounds.push(point);
