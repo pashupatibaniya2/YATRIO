@@ -32,8 +32,11 @@ export default async function(req,res){
     try{
       const failedUuid=String(req.query?.transaction_uuid||"");
       if(req.query?.failed==="1"&&failedUuid){
-        const failed=await db.query("UPDATE payment_transactions SET status='cancelled',failure_reason='Provider return failure',updated_at=now() WHERE booking_type='bus' AND provider='esewa' AND provider_payment_id=$1 AND status<>'succeeded' RETURNING booking_ref",[failedUuid]);
-        return res.redirect(go("cancelled",failed.rows[0]?.booking_ref||""));
+        // Browser return parameters are not proof of a provider-side cancellation.
+        // Leave payment state unchanged; the authenticated status/verification flow
+        // or a later signed provider response must determine the final outcome.
+        const pending=await db.query("SELECT booking_ref FROM payment_transactions WHERE booking_type='bus' AND provider='esewa' AND provider_payment_id=$1 LIMIT 1",[failedUuid]);
+        return res.redirect(go("pending",pending.rows[0]?.booking_ref||""));
       }
       const encoded=String(req.query?.data||"");
       if(!encoded||encoded.length>12000) return res.redirect(go("invalid",""));

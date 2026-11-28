@@ -188,7 +188,7 @@ Recommended smoke-test sequence:
 - Server-side authorization is required for every protected action; hiding a UI button is not access control.
 - Operator approval requires exactly four submitted documents, all four approved. Public bus search, operator profiles and comparison results also enforce this four-document rule so inconsistent legacy approval flags do not expose incomplete operators. Admin review surfaces flag the inconsistency without silently changing the stored operator status.
 - Validate request bodies, IDs, monetary amounts, state transitions and ownership server-side.
-- Payment callbacks must verify provider signatures/status with the provider before confirming bookings.
+- Payment callbacks must verify provider signatures/status with the provider before confirming bookings. Browser return URLs (including failure/cancel returns) are untrusted navigation signals and must never directly mutate payment or booking state.
 - Never store merchant secrets in public JavaScript or commit them to source files.
 - Apply least privilege to admin, operator and passenger data.
 - Keep precise location private, consent-based, scoped to a trip and automatically expired.
