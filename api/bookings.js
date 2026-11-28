@@ -3,11 +3,12 @@ import { notifyBooking } from "lib/booking-notifications.js";
 export const access = "user";
 export const methods = ["POST"];
 export default async function(req,res) {
-  const scheduleId = String(req.body.schedule_id || "");
-  const name = String(req.body.passenger_name || "").trim();
-  const phone = String(req.body.passenger_phone || "").trim();
-  const email = String(req.body.passenger_email || "").trim();
-  const seatIds = Array.isArray(req.body.seat_ids) ? [...new Set(req.body.seat_ids.map(String))] : [];
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const scheduleId = String(body.schedule_id || "");
+  const name = String(body.passenger_name || "").trim();
+  const phone = String(body.passenger_phone || "").trim();
+  const email = String(body.passenger_email || "").trim();
+  const seatIds = Array.isArray(body.seat_ids) ? [...new Set(body.seat_ids.map(String))] : [];
   if (!/^[0-9a-f-]{36}$/i.test(scheduleId) || !name || !phone || seatIds.length < 1 || seatIds.length > 6 || seatIds.some(x => !/^[0-9a-f-]{36}$/i.test(x))) {
     return res.status(400).json({error:"Enter passenger name, phone and select 1–6 valid seats."});
   }
