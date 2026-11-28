@@ -69,7 +69,7 @@ async function loadMarketplace(){
   }
   function destinationIllustration(d,kind){
     const palettes={mountain:["#b9d9d3","#286276","#f5fbf4"],heritage:["#f4dfbf","#98654b","#fff1d5"],nature:["#d9ead3","#286b58","#f3f7d8"],city:["#d7e8ee","#356d80","#f6f2df"]};
-    const c=palettes[kind]||palettes.city,seed=Array.from(d.slug).reduce((a,x)=>a+x.charCodeAt(0),0),sunX=110+(seed%180);
+    const c=palettes[kind]||palettes.city,seed=Array.from(d.slug).reduce((a,x,i)=>(a*31+x.charCodeAt(0)+i)%9973,7),sunX=65+(seed%230);
     const scene=kind==="heritage"
       ? '<path d="M0 245V170h52v-35h28v35h40v-68h42v68h46v-42h34v42h58v75Z" fill="'+c[1]+'"/><path d="M148 102l21-29 21 29v66h-42Z" fill="'+c[2]+'"/><path d="M158 130h22v38h-22Z" fill="'+c[0]+'"/>'
       : kind==="nature"
