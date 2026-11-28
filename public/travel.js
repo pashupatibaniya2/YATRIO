@@ -77,7 +77,7 @@ async function loadMarketplace(){
       : kind==="mountain"
       ? '<path d="M0 230 78 115l45 65 68-115 82 127 42-53 45 91v40H0Z" fill="'+c[1]+'"/><path d="m150 143 41-78 48 74-34-19-15 17-15-16Z" fill="'+c[2]+'"/>'
       : '<path d="M0 205Q85 135 170 198T360 175V270H0Z" fill="'+c[1]+'"/><path d="M0 230Q100 185 210 224T360 207V270H0Z" fill="#7caeaa"/>';
-    const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 270"><defs><linearGradient id="g" x2="0" y2="1"><stop stop-color="'+c[0]+'"/><stop offset="1" stop-color="#eef4e8"/></linearGradient></defs><rect width="360" height="270" fill="url(#g)"/><circle cx="'+sunX+'" cy="66" r="27" fill="#fff0bd" opacity=".95"/>'+scene+'<path d="M0 258Q90 246 180 258T360 250V270H0Z" fill="#173e4a" opacity=".35"/><text x="18" y=" thirty" font-family="Arial,sans-serif" font-size="1" fill="none"> </text></svg>';
+    const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 270"><defs><linearGradient id="g" x2="0" y2="1"><stop stop-color="'+c[0]+'"/><stop offset="1" stop-color="#eef4e8"/></linearGradient></defs><rect width="360" height="270" fill="url(#g)"/><circle cx="'+sunX+'" cy="66" r="27" fill="#fff0bd" opacity=".95"/>'+scene+'<path d="M0 258Q90 246 180 258T360 250V270H0Z" fill="#173e4a" opacity=".35"/><text x="18" y="42" font-family="Arial,sans-serif" font-size="16" font-weight="700" fill="#ffffff" opacity=".9">'+esc(d.name)+'</text></svg>';
     return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
   }
   function renderDestinations(){
